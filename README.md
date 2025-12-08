@@ -1,5 +1,11 @@
 # neural-netz
+
 Visualize Neural Network Architectures in high-quality diagrams using [Typst](https://typst.app), with style and API inspired by [PlotNeuralNet](https://github.com/HarisIqbal88/PlotNeuralNet).
+
+![Static Badge](https://img.shields.io/badge/HAL-05401124-%23fc6d3a?style=flat-square&logo=HAL&logoColor=%23fc6d3a&labelColor=%23171768&link=https%3A%2F%2Fhal.science%2Fhal-05401124)&nbsp;
+![GitHub Release](https://img.shields.io/github/v/release/edgaremy/neural-netz?style=flat-square&labelColor=%23aa2589&color=%23e2a6ed)&nbsp;
+![GitHub License](https://img.shields.io/github/license/edgaremy/neural-netz?style=flat-square&labelColor=%2326ad84&color=%2396e7c8)&nbsp;
+![GitHub Repo stars](https://img.shields.io/github/stars/edgaremy/neural-netz?style=flat-square&labelColor=%23e8963a&color=%23ffe0a1)
 
 <p align="center">
 <img src="gallery/features/FCN-8(cold).png" alt="Example of Neural Net visualizaiton with cold color palette" width="750px"/>
@@ -203,13 +209,20 @@ Remy, E. (2025). neural-netz, a Typst Package (Version 0.2.0) [Computer software
 #### BibTeX
 
 ```bib
-@software{Remy_neural-netz_a_Typst_2025,
-author = {Remy, Edgar},
-month = dec,
-title = {{neural-netz, a Typst Package}},
-url = {https://github.com/edgaremy/neural-netz/},
-version = {0.2.0},
-year = {2025}
+@softwareversion{remy:hal-05401124v1,
+  TITLE = {{neural-netz, a Typst Package}},
+  AUTHOR = {Remy, Edgar},
+  URL = {https://hal.science/hal-05401124},
+  NOTE = {},
+  YEAR = {2025},
+  MONTH = Dec,
+  SWHID = {swh:1:dir:55c4750c9bc10aa40046e5ca52c9ff547bc87d98;origin=https://github.com/edgaremy/neural-netz;visit=swh:1:snp:296f771f07e0fdaf0938b2ea4dafe8413059eded;anchor=swh:1:rev:c5fea37ca375ad4efa46fad758774b2ed92d8cd9},
+  VERSION = {0.2.0},
+  REPOSITORY = {https://github.com/edgaremy/neural-netz},
+  LICENSE = {https://spdx.org/licenses/MIT-0},
+  KEYWORDS = {visualization ; typst ; neural networks ; deep learning},
+  HAL_ID = {hal-05401124},
+  HAL_VERSION = {v1},
 }
 ```
 
