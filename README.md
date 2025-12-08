@@ -2,7 +2,7 @@
 
 Visualize Neural Network Architectures in high-quality diagrams using [Typst](https://typst.app), with style and API inspired by [PlotNeuralNet](https://github.com/HarisIqbal88/PlotNeuralNet).
 
-![Static Badge](https://img.shields.io/badge/HAL-05401124-%23fc6d3a?style=flat-square&logo=HAL&logoColor=%23fc6d3a&labelColor=%23171768&link=https%3A%2F%2Fhal.science%2Fhal-05401124)&nbsp;
+<img alt="Static Badge" src="https://img.shields.io/badge/HAL-05401124-%23fcac8f?style=flat-square&logo=HAL&logoColor=%23fc6d3a&labelColor=%23171768&link=https%3A%2F%2Fhal.science%2Fhal-05401124">&nbsp;
 ![GitHub Release](https://img.shields.io/github/v/release/edgaremy/neural-netz?style=flat-square&labelColor=%23aa2589&color=%23e2a6ed)&nbsp;
 ![GitHub License](https://img.shields.io/github/license/edgaremy/neural-netz?style=flat-square&labelColor=%2326ad84&color=%2396e7c8)&nbsp;
 ![GitHub Repo stars](https://img.shields.io/github/stars/edgaremy/neural-netz?style=flat-square&labelColor=%23e8963a&color=%23ffe0a1)

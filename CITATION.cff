@@ -14,7 +14,7 @@ identifiers:
     value: hal-05401124
     description: HAL ID
 repository-code: 'https://github.com/edgaremy/neural-netz/'
-url: 'https://typst.app/universe/package/neural-netz'
+url: 'https://hal.science/hal-05401124'
 abstract: >-
   A Typst package for visualizing Neural Network
   Architectures with high-quality diagrams. 
