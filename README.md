@@ -136,7 +136,7 @@ Here is a visualization of all the predefined layer types, in both color palette
 <p align="center">
 <img src="gallery/features/predefined-layers.png" alt="Predefined layers example" width="650"/>
 </p>
-<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/56e7042b97a7856394963532438f316aea95a596/examples/features/predefined-layers.typ">code for this image</a></p>
+<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/db550ba2eda99ffbcbb01c1e0374ea6519e16a74/examples/features/predefined-layers.typ">code for this image</a></p>
 
 ### Custom layers
 
@@ -182,25 +182,25 @@ legend-title: "My new layers" // You can also change the legend title
 
 
 ## Examples
-Here are a few network architectures implemented with neural-netz (more examples can be found [in the repo](https://github.com/edgaremy/neural-netz/tree/d003774deafd29a0d48c477365a2ba60dad33a59/examples/networks)).
+Here are a few network architectures implemented with neural-netz (more examples can be found [in the repo](https://github.com/edgaremy/neural-netz/tree/db550ba2eda99ffbcbb01c1e0374ea6519e16a74/examples/networks)).
 
 <h3 style="text-align: center;">ResNet18</h3>
 <p align="center">
 <img src="gallery/networks/ResNet18.png" alt="ResNet18 visualization" width="500"/>
 </p>
-<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/56e7042b97a7856394963532438f316aea95a596/examples/networks/ResNet18.typ">code for this image</a></p>
+<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/741c71cd31d40161df44354fb65fbad7233a82aa/examples/networks/ResNet18.typ">code for this image</a></p>
 
 <h3 style="text-align: center;">U-Net</h3>
 <p align="center">
 <img src="gallery/networks/U-Net.png" alt="U-Net visualization" width="500"/>
 </p>
-<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/56e7042b97a7856394963532438f316aea95a596/examples/networks/U-Net.typ">code for this image</a></p>
+<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/741c71cd31d40161df44354fb65fbad7233a82aa/examples/networks/U-Net.typ">code for this image</a></p>
 
 <h3 style="text-align: center;">FCN-8</h3>
 <p align="center">
 <img src="gallery/networks/FCN-8.png" alt="FCN-8 visualization" width="500"/>
 </p>
-<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/56e7042b97a7856394963532438f316aea95a596/examples/networks/FCN-8.typ">code for this image</a></p>
+<p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/741c71cd31d40161df44354fb65fbad7233a82aa/examples/networks/FCN-8.typ">code for this image</a></p>
 
 ## Cite this work
 If you use the neural-netz package for a scientific publication, you can [cite its initial publication on HAL](https://hal.science/hal-05401124), indicating current version as follows:
