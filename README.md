@@ -22,7 +22,7 @@ Under the hood, this package only uses the native Typst package [CeTZ](https://t
 
 Simply import the all-in-one drawing function from the neural-netz package:
 ```typ
-#import "@preview/neural-netz:0.2.0": draw-network
+#import "@preview/neural-netz:0.3.0": draw-network
 ```
 You can then call `draw-network` which has the following arguments:
 ```typ
@@ -205,10 +205,10 @@ Here are a few network architectures implemented with neural-netz (more examples
 <p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/56e7042b97a7856394963532438f316aea95a596/examples/networks/FCN-8.typ">code for this image</a></p>
 
 ## Cite this work
-If you use the neural-netz package for a scientific publication, you can [cite its initial publication on HAL](https://hal.science/hal-05401124) as follows:
+If you use the neural-netz package for a scientific publication, you can [cite its initial publication on HAL](https://hal.science/hal-05401124), indicating current version as follows:
 #### APA
 ```
-Remy, E. (2025). neural-netz, a Typst Package (Version 0.2.0) [Computer software]. https://hal.science/hal-05401124
+Remy, E. (2025). neural-netz, a Typst Package (Version 0.3.0) [Computer software]. https://hal.science/hal-05401124
 ```
 #### BibTeX
 
@@ -221,7 +221,7 @@ Remy, E. (2025). neural-netz, a Typst Package (Version 0.2.0) [Computer software
   YEAR = {2025},
   MONTH = Dec,
   SWHID = {swh:1:dir:55c4750c9bc10aa40046e5ca52c9ff547bc87d98;origin=https://github.com/edgaremy/neural-netz;visit=swh:1:snp:296f771f07e0fdaf0938b2ea4dafe8413059eded;anchor=swh:1:rev:c5fea37ca375ad4efa46fad758774b2ed92d8cd9},
-  VERSION = {0.2.0},
+  VERSION = {0.3.0},
   REPOSITORY = {https://github.com/edgaremy/neural-netz},
   LICENSE = {https://spdx.org/licenses/MIT-0},
   KEYWORDS = {visualization ; typst ; neural networks ; deep learning},
