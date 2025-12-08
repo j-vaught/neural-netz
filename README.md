@@ -5,7 +5,7 @@ Visualize Neural Network Architectures in high-quality diagrams using [Typst](ht
 <p align="center">
 <a href="https://hal.science/hal-05401124">
   <img alt="Static Badge" src="https://img.shields.io/badge/HAL-05401124-%23fcac8f?style=flat-square&logo=HAL&logoColor=%23fc6d3a&labelColor=%23171768">
-</a>
+</a>&nbsp;
   <img alt="GitHub Release" src="https://img.shields.io/github/v/release/edgaremy/neural-netz?style=flat-square&labelColor=%23aa2589&color=%23e2a6ed"/>
   <img alt="GitHub License" src="https://img.shields.io/github/license/edgaremy/neural-netz?style=flat-square&labelColor=%2326ad84&color=%2396e7c8"/>
   <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/edgaremy/neural-netz?style=flat-square&labelColor=%23e8963a&color=%23ffe0a1"/>
