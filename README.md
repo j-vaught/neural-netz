@@ -2,10 +2,14 @@
 
 Visualize Neural Network Architectures in high-quality diagrams using [Typst](https://typst.app), with style and API inspired by [PlotNeuralNet](https://github.com/HarisIqbal88/PlotNeuralNet).
 
-<img alt="Static Badge" src="https://img.shields.io/badge/HAL-05401124-%23fcac8f?style=flat-square&logo=HAL&logoColor=%23fc6d3a&labelColor=%23171768&link=https%3A%2F%2Fhal.science%2Fhal-05401124">&nbsp;
-![GitHub Release](https://img.shields.io/github/v/release/edgaremy/neural-netz?style=flat-square&labelColor=%23aa2589&color=%23e2a6ed)&nbsp;
-![GitHub License](https://img.shields.io/github/license/edgaremy/neural-netz?style=flat-square&labelColor=%2326ad84&color=%2396e7c8)&nbsp;
-![GitHub Repo stars](https://img.shields.io/github/stars/edgaremy/neural-netz?style=flat-square&labelColor=%23e8963a&color=%23ffe0a1)
+<p align="center">
+<a href="https://hal.science/hal-05401124">
+  <img alt="Static Badge" src="https://img.shields.io/badge/HAL-05401124-%23fcac8f?style=flat-square&logo=HAL&logoColor=%23fc6d3a&labelColor=%23171768">
+</a>
+  <img alt="GitHub Release" src="https://img.shields.io/github/v/release/edgaremy/neural-netz?style=flat-square&labelColor=%23aa2589&color=%23e2a6ed"/>
+  <img alt="GitHub License" src="https://img.shields.io/github/license/edgaremy/neural-netz?style=flat-square&labelColor=%2326ad84&color=%2396e7c8"/>
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/edgaremy/neural-netz?style=flat-square&labelColor=%23e8963a&color=%23ffe0a1"/>
+</p>
 
 <p align="center">
 <img src="gallery/features/FCN-8(cold).png" alt="Example of Neural Net visualizaiton with cold color palette" width="750px"/>
@@ -201,10 +205,10 @@ Here are a few network architectures implemented with neural-netz (more examples
 <p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/56e7042b97a7856394963532438f316aea95a596/examples/networks/FCN-8.typ">code for this image</a></p>
 
 ## Cite this work
-If you use the neural-netz package for a scientific publication, you can cite it as follows:
+If you use the neural-netz package for a scientific publication, you can [cite its initial publication on HAL](https://hal.science/hal-05401124) as follows:
 #### APA
 ```
-Remy, E. (2025). neural-netz, a Typst Package (Version 0.2.0) [Computer software]. https://github.com/edgaremy/neural-netz/
+Remy, E. (2025). neural-netz, a Typst Package (Version 0.2.0) [Computer software]. https://hal.science/hal-05401124
 ```
 #### BibTeX
 
