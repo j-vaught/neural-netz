@@ -164,7 +164,8 @@ A custom layer can also be added to the smart legend, when specifying a `legend`
     legend: "Custom Color+Bandfill",
   ),
 ),
-show-legend: true
+show-legend: true,
+legend-title: "My new layers" // You can also change the legend title
 )
 ```
 <p align="center">

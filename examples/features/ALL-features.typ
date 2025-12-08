@@ -86,6 +86,7 @@ show-relu: true // visualize relu using darker color on convolution layers
     legend: "Custom Color+Bandfill",
   ),
 ),
-show-legend: true
+show-legend: true,
+legend-title: "My new layers" // You can also change the legend title
 )
 
