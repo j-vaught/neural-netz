@@ -195,6 +195,22 @@ canvas(length: 1cm * scale-factor, {
     )
   }
   
+  // Outline a prism as one closed silhouette + its 3 near-corner creases (round joins).
+  let draw-prism-silhouette(px, py, pw, ph, pox, poy, base, show-right: true) = {
+    let s = (paint: base.paint, thickness: base.thickness, join: "round", cap: "round")
+    let A = (px, py)
+    let B = (px + pw, py)
+    let C = (px + pw, py + ph)
+    let D = (px, py + ph)
+    let Bp = (px + pw + pox, py + poy)
+    let Cp = (px + pw + pox, py + ph + poy)
+    let Dp = (px + pox, py + ph + poy)
+    line(A, B, Bp, Cp, Dp, D, close: true, stroke: s)
+    if show-right { line(B, C, stroke: s) }
+    line(D, C, stroke: s)
+    line(C, Cp, stroke: s)
+  }
+
   let box-3d(x, y, w, h, d, fill, opacity: 1, show-left: true, show-right: true, ylabel: none, zlabel: none, is-input: false, image: none) = {
     let (ox, oy) = get-depth-offsets(d)
     let alpha = 100% - opacity * 100%
@@ -204,30 +220,20 @@ canvas(length: 1cm * scale-factor, {
     line((x, y), (x + ox, y + oy), stroke: dyn-strokes.hidden)
     line((x + ox, y + oy), (x + w + ox, y + oy), stroke: dyn-strokes.hidden)
     line((x + ox, y + oy), (x + ox, y + h + oy), stroke: dyn-strokes.hidden)
-    
+
     rect((x, y), (x + w, y + h), fill: fill.transparentize(alpha), stroke: none)
-    
-    if show-left {
-      line((x, y), (x, y + h), stroke: dyn-strokes.solid)
-    }
-    if show-right {
-      line((x + w, y), (x + w, y + h), stroke: dyn-strokes.solid)
-    }
-    line((x, y + h), (x + w, y + h), stroke: dyn-strokes.solid)
-    line((x, y), (x + w, y), stroke: dyn-strokes.solid)
-    
+
     line((x, y + h), (x + ox, y + h + oy), (x + w + ox, y + h + oy), (x + w, y + h),
-      close: true, fill: fill.darken(darken-amounts.top).transparentize(alpha), stroke: dyn-strokes.solid)
-    
-    // Draw right face normally
+      close: true, fill: fill.darken(darken-amounts.top).transparentize(alpha), stroke: none)
     line((x + w, y), (x + w + ox, y + oy), (x + w + ox, y + h + oy), (x + w, y + h),
-      close: true, fill: fill.darken(darken-amounts.right).transparentize(alpha), stroke: dyn-strokes.solid)
-    
-    // DRAW IMAGE ON TOP OF RIGHT FACE WITH ISOMETRIC PERSPECTIVE
+      close: true, fill: fill.darken(darken-amounts.right).transparentize(alpha), stroke: none)
+
     if image != none {
       draw-isometric-image(x, y, w, h, ox, oy, image)
     }
-    
+
+    draw-prism-silhouette(x, y, w, h, ox, oy, dyn-strokes.solid, show-right: show-right)
+
     if is-input {
       if ylabel != none {
         content((x - 0.2, y + h/2), anchor: "east",
@@ -351,27 +357,19 @@ canvas(length: 1cm * scale-factor, {
       let left-pt = (back-mid.at(0) - px * wing, back-mid.at(1) - py * wing)
       let back-tip = (back-mid.at(0) + ux * back * 0.5, back-mid.at(1) + uy * back * 0.5)
 
-      let arrow-color = if opacity < 1.0 {
-        colors.arrow.transparentize(100% - opacity * 100%)
-      } else {
-        colors.arrow
-      }
-      
+      let arrow-color = colors.arrow
+
       line(tip-pt, right-pt, back-tip, left-pt, close: true,
-        fill: arrow-color, stroke: (paint: arrow-color, thickness: strokes.arrow.thickness))
+        fill: arrow-color, stroke: (paint: arrow-color, thickness: strokes.arrow.thickness, join: "round"))
     }
   }
   
   let draw-segment-with-arrow(x1, y1, x2, y2, opacity: 0.7) = {
-    let paint = if opacity < 1.0 {
-      colors.connection.transparentize(100% - opacity * 100%)
-    } else {
-      colors.connection
-    }
-    line((x1, y1), (x2, y2), stroke: (paint: paint, thickness: strokes.connection.thickness))
+    let paint = colors.connection
+    line((x1, y1), (x2, y2), stroke: (paint: paint, thickness: strokes.connection.thickness, cap: "butt"))
     draw-arrow-icon(x1, y1, x2, y2, opacity: opacity)
   }
-  
+
   let draw-connection-path(segments, opacity: 0.7, layers: none, layer-positions-ref: (:), show-relu: false) = {
     // If there are layers to draw on segment idx==1, we need to split that segment
     if layers != none and layers.len() > 0 {
@@ -484,11 +482,6 @@ canvas(length: 1cm * scale-factor, {
             cumulative-x += band-width
           }
 
-          line((mid-x, mid-y), (mid-x, mid-y + layer-h), stroke: dyn-strokes.solid)
-          line((mid-x + total-width, mid-y), (mid-x + total-width, mid-y + layer-h), stroke: dyn-strokes.solid)
-          line((mid-x, mid-y + layer-h), (mid-x + total-width, mid-y + layer-h), stroke: dyn-strokes.solid)
-          line((mid-x, mid-y), (mid-x + total-width, mid-y), stroke: dyn-strokes.solid)
-
           cumulative-x = mid-x
           for (j, w) in widths.enumerate() {
             let band-width = w
@@ -504,7 +497,7 @@ canvas(length: 1cm * scale-factor, {
           line((mid-x + total-width, mid-y), (mid-x + total-width + lox, mid-y + loy),
             (mid-x + total-width + lox, mid-y + layer-h + loy), (mid-x + total-width, mid-y + layer-h),
             close: true, fill: right-face-color.darken(darken-amounts.right).transparentize(opacity-values.right-face),
-            stroke: right-face-strokes.solid)
+            stroke: none)
 
           cumulative-x = mid-x
           for (j, w) in widths.enumerate() {
@@ -516,11 +509,7 @@ canvas(length: 1cm * scale-factor, {
             cumulative-x += band-width
           }
 
-          line((mid-x, mid-y + layer-h), (mid-x + lox, mid-y + layer-h + loy), stroke: dyn-strokes.solid)
-          line((mid-x + lox, mid-y + layer-h + loy), (mid-x + total-width + lox, mid-y + layer-h + loy), stroke: dyn-strokes.solid)
-          line((mid-x + total-width, mid-y + layer-h), (mid-x + total-width + lox, mid-y + layer-h + loy), stroke: dyn-strokes.solid)
-          line((mid-x + total-width + lox, mid-y + loy), (mid-x + total-width + lox, mid-y + layer-h + loy), stroke: dyn-strokes.solid)
-          line((mid-x + total-width, mid-y), (mid-x + total-width + lox, mid-y + loy), stroke: dyn-strokes.solid)
+          draw-prism-silhouette(mid-x, mid-y, total-width, layer-h, lox, loy, dyn-strokes.solid)
           
           let label = layer-spec.at("label", default: none)
           if label != none {
@@ -568,6 +557,24 @@ canvas(length: 1cm * scale-factor, {
       for seg in segments {
         draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity)
       }
+    }
+
+    // Round join at each interior waypoint cleans the elbows; terminations stay flat.
+    for i in range(segments.len() - 1) {
+      let v = segments.at(i).at(1)
+      let a = segments.at(i).at(0)
+      let b = segments.at(i + 1).at(1)
+      let da = (a.at(0) - v.at(0), a.at(1) - v.at(1))
+      let db = (b.at(0) - v.at(0), b.at(1) - v.at(1))
+      let la = calc.max(calc.sqrt(da.at(0) * da.at(0) + da.at(1) * da.at(1)), 0.001)
+      let lb = calc.max(calc.sqrt(db.at(0) * db.at(0) + db.at(1) * db.at(1)), 0.001)
+      let stub = 0.12
+      line(
+        (v.at(0) + da.at(0) / la * stub, v.at(1) + da.at(1) / la * stub),
+        v,
+        (v.at(0) + db.at(0) / lb * stub, v.at(1) + db.at(1) / lb * stub),
+        stroke: (paint: colors.connection, thickness: strokes.connection.thickness, join: "round", cap: "butt"),
+      )
     }
   }
   
@@ -789,12 +796,6 @@ canvas(length: 1cm * scale-factor, {
           cumulative-x += band-width
         }
         
-        // Draw front face outer edges
-        line((start-x, y-offset), (start-x, y-offset + h), stroke: dyn-strokes.solid)
-        line((start-x + total-width, y-offset), (start-x + total-width, y-offset + h), stroke: dyn-strokes.solid)
-        line((start-x, y-offset + h), (start-x + total-width, y-offset + h), stroke: dyn-strokes.solid)
-        line((start-x, y-offset), (start-x + total-width, y-offset), stroke: dyn-strokes.solid)
-        
         // Draw top face segmented by band
         cumulative-x = start-x
         for (j, ch) in channel-labels.enumerate() {
@@ -812,7 +813,7 @@ canvas(length: 1cm * scale-factor, {
           (start-x + total-width + ox, y-offset + h + oy), (start-x + total-width, y-offset + h),
           close: true,
           fill: right-face-color.darken(darken-amounts.right).transparentize(opacity-values.right-face),
-          stroke: dyn-strokes.solid)
+          stroke: none)
         
         // Draw image on top of right face if provided
         if img != none {
@@ -830,10 +831,7 @@ canvas(length: 1cm * scale-factor, {
         cumulative-x += band-width
       }
       
-      // Draw outer edges (excluding right face edges which are already drawn)
-      line((start-x, y-offset + h), (start-x + ox, y-offset + h + oy), stroke: dyn-strokes.solid)
-      line((start-x + ox, y-offset + h + oy), (start-x + total-width + ox, y-offset + h + oy), stroke: dyn-strokes.solid)
-      line((start-x + total-width, y-offset + h), (start-x + total-width + ox, y-offset + h + oy), stroke: dyn-strokes.solid)
+      draw-prism-silhouette(start-x, y-offset, total-width, h, ox, oy, dyn-strokes.solid)
       
       prev-x = start-x + total-width
         prev-depth-offset = ox
@@ -1048,12 +1046,6 @@ canvas(length: 1cm * scale-factor, {
         cumulative-x += band-width
       }
       
-      // Draw front face outer edges (only the perimeter)
-      line((start-x, y-offset), (start-x, y-offset + h), stroke: dyn-strokes.solid)
-      line((start-x + total-width, y-offset), (start-x + total-width, y-offset + h), stroke: dyn-strokes.solid)
-      line((start-x, y-offset + h), (start-x + total-width, y-offset + h), stroke: dyn-strokes.solid)
-      line((start-x, y-offset), (start-x + total-width, y-offset), stroke: dyn-strokes.solid)
-      
       // Draw top face segmented by band
       cumulative-x = start-x
       for (j, ch) in channel-labels.enumerate() {
@@ -1071,7 +1063,7 @@ canvas(length: 1cm * scale-factor, {
         (start-x + total-width + ox, y-offset + h + oy), (start-x + total-width, y-offset + h),
         close: true,
         fill: right-face-color.darken(darken-amounts.right).transparentize(opacity-values.right-face),
-        stroke: dyn-strokes.solid)
+        stroke: none)
       
       // Draw image on top of right face if provided
       if img != none {
@@ -1089,10 +1081,7 @@ canvas(length: 1cm * scale-factor, {
         cumulative-x += band-width
       }
       
-      // Draw outer edges of the block (excluding right face edges which are already drawn)
-      line((start-x, y-offset + h), (start-x + ox, y-offset + h + oy), stroke: dyn-strokes.solid)
-      line((start-x + ox, y-offset + h + oy), (start-x + total-width + ox, y-offset + h + oy), stroke: dyn-strokes.solid)
-      line((start-x + total-width, y-offset + h), (start-x + total-width + ox, y-offset + h + oy), stroke: dyn-strokes.solid)
+      draw-prism-silhouette(start-x, y-offset, total-width, h, ox, oy, dyn-strokes.solid)
       
       prev-x = start-x + total-width
       prev-depth-offset = ox
