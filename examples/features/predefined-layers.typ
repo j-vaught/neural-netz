@@ -63,6 +63,18 @@
     label: "custom",
     legend: "Custom Layer",
     offset: 0.6
+  ),(
+    // A custom layer shows an activation band only when it asks for one, either
+    // by declaring a bandfill or by opting in with show-relu. Without that it
+    // stays flat, even when the network sets show-relu globally.
+    type: "custom",
+    widths: (0.3, 0.3),
+    height: 3,
+    depth: 3,
+    label: "custom+relu",
+    legend: "Custom Layer + activation",
+    show-relu: true,
+    offset: 1.8
   ),
 )
 
