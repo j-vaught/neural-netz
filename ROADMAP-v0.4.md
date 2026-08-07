@@ -244,10 +244,14 @@ version offset in x alone, which walked the arrival off any edge that is not hor
 west side's top and bottom edges run along the isometric depth direction, so two of three
 fanned-in routes ended in mid-air above the block rather than on it.
 
-Note that arrowheads remain mid-segment, as everywhere else in the package, so on a long final
-descent the head sits well above the block it arrives at. That is pre-existing behaviour
-rather than something this item introduced, but it makes a fan-in harder to read than it
-should be, and it is part of what item 14's junction markers would address.
+Arrowheads are mid-segment everywhere else in the package, which left a fan-in unreadable: on
+a long final descent the head sat well above the block, so nothing marked where a route
+landed. A route arriving at a named anchor now puts its head at the arrival point. Scoped to
+named anchors so no existing figure changes, and because the mid-segment convention is right
+for a route that passes through rather than terminating.
+
+Item 14's junction markers would go further, marking the arrival on the block itself rather
+than relying on a head that happens to end there.
 
 *Test:* one target layer with three incoming skips, all on anchor `"nw"`, at
 `arrive-offset: -0.3, 0, 0.3`, then all five anchors on one layer with a route each.
