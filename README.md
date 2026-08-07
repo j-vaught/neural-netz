@@ -198,6 +198,18 @@ Residual adds, concat feeds, attention routes and auxiliary supervision paths ar
 
 `thickness` multiplies rather than replaces, so a figure that passes `stroke-thickness` to `draw-network` still scales its connections. Arrowheads take the line colour, since a coloured line with black arrowheads reads as a bug rather than a choice.
 
+#### Automatic lane heights
+
+`pos` is measured from the centre axis, so a value that clears the blocks has to be worked out from the layer heights and depths, and every route needs its own height or they overlap. Give `pos: auto` instead:
+
+```typ
+(from: "a", to: "h", type: "skip", mode: "air", pos: auto)
+```
+
+The route is placed clear of the tallest layer in the figure, and routes are packed into the fewest lanes that keep them apart: sorted by where each starts, each takes the lowest lane whose previous occupant has already finished, so routes that do not overlap share a lane. Add a connection and the others reflow rather than needing to be re-tuned.
+
+Set `clearance` on a connection to change how far the first lane sits above the blocks. Numeric `pos` is unaffected and keeps its current meaning.
+
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.

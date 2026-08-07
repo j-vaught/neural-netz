@@ -175,7 +175,23 @@ common enough to deserve first-class support.
 *Test:* one target layer with three incoming skips, all on anchor `"nw"`, at
 `arrive-offset: -0.3, 0, 0.3`. Expect three distinct, evenly spaced arrowheads.
 
-### 10. `pos: auto` lane assignment
+### 10. `pos: auto` lane assignment -- done, ahead of its tier
+
+Brought forward because routing over the top is the house style, which makes lanes the
+recurring cost rather than crossings. The stated dependency on item 9 did not hold: packing
+needs each connection's x-span, which `layer-positions` already carries, not its arrival
+anchor.
+
+Two parts. A route asking for `auto` is placed clear of the tallest layer in the figure,
+using a reach accumulated during the drawing pass, so the author no longer has to derive a
+clearing height from layer dimensions. Routes are then packed by the usual greedy: sort by
+start, take the lowest lane whose previous occupant has finished.
+
+Note that consecutive skips sharing an endpoint layer do land in different lanes. Their
+spans genuinely touch, and the descent of one meets the ascent of the next at the same x, so
+that is correct rather than conservative.
+
+Original note follows.
 
 Depends on 9, since lane packing needs real arrival points. Collect each connection's
 x-span, sort, and greedily assign the lowest non-conflicting lane. This is standard

@@ -8,6 +8,9 @@
 // shifted along the axis. Matching the routing is what isolates styling from
 // layout, so any difference you see is the style and nothing else.
 //
+// pos is fixed rather than auto here, precisely so the geometry stays identical.
+// Automatic lanes are exercised in connection-auto-lane.typ.
+//
 //   color      paint for the line and its arrowheads
 //   dash       any Typst dash pattern
 //   thickness  multiplies the palette width, so a figure passing
@@ -24,10 +27,10 @@
 #draw-network(
   range(1, 10).map(layer),
   connections: (
-    (from: "l1", to: "l3", type: "skip", mode: "air", pos: 1.2, label: "default"),
-    (from: "l3", to: "l5", type: "skip", mode: "air", pos: 1.2, label: "dashed", dash: "dashed"),
-    (from: "l5", to: "l7", type: "skip", mode: "air", pos: 1.2, label: "colour", color: garnet),
-    (from: "l7", to: "l9", type: "skip", mode: "air", pos: 1.2, label: "thick + dotted",
+    (from: "l1", to: "l3", type: "skip", mode: "air", pos: 2.2, label: "default"),
+    (from: "l3", to: "l5", type: "skip", mode: "air", pos: 2.2, label: "dashed", dash: "dashed"),
+    (from: "l5", to: "l7", type: "skip", mode: "air", pos: 2.2, label: "colour", color: garnet),
+    (from: "l7", to: "l9", type: "skip", mode: "air", pos: 2.2, label: "thick + dotted",
       color: atlantic, dash: "dotted", thickness: 2),
   ),
 )

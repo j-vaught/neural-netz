@@ -662,6 +662,7 @@ canvas(length: 1cm * scale-factor, {
   
   let x = 0
   let arrow-axis-y = arrow-config.axis-y
+  let max-half-extent = 0
   let prev-center-y = arrow-axis-y
   let prev-x = 0
   let prev-depth-offset = 0
@@ -700,6 +701,12 @@ canvas(length: 1cm * scale-factor, {
       let default-d = if l.type == "pool" or l.type == "unpool" { 4 } else if l.type == "concat" { 3 } else if l.type == "gap" { 1.5 } else if l.type == "fc" or l.type == "softmax" or l.type == "output" { 0.4 } else if l.type == "convsoftmax" { 4 } else { 5 }
       l.insert("depth", default-d)
     }
+
+    // Track the greatest reach of any layer from the axis, front-bottom to
+    // back-top. `pos: auto` uses it to sit clear of every block instead of at a
+    // height the author has to work out from the layer dimensions.
+    let (_, l-oy) = get-depth-offsets(l.depth)
+    max-half-extent = calc.max(max-half-extent, l.height / 2 + l-oy / 2)
     
     let gap = if i == 0 {
       0
@@ -1794,12 +1801,55 @@ canvas(length: 1cm * scale-factor, {
     }
   }
   
-  for conn in connections {
+  // Lane assignment for connections that ask for `pos: auto`.
+  //
+  // A route drawn over the stack needs its own height, and picking those by
+  // hand means every one shifts when a connection is added. Sorting by where a
+  // route starts and giving it the lowest lane whose previous occupant has
+  // already finished is the usual interval-packing greedy: routes that do not
+  // overlap share a lane instead of each claiming a new one.
+  let lane-clearance = 0.7   // from the tallest layer to the first lane
+  let lane-gap = 0.75        // between stacked lanes
+  let auto-lane = (:)
+  {
+    let spans = ()
+    for (i, conn) in connections.enumerate() {
+      if conn.at("pos", default: 1.25) != auto { continue }
+      let f = conn.at("from")
+      let t = conn.at("to")
+      if f not in layer-positions or t not in layer-positions { continue }
+      let a = layer-positions.at(f)
+      let b = layer-positions.at(t)
+      spans.push((i: i, start: calc.min(a.x, b.x), end: calc.max(a.x + a.w, b.x + b.w)))
+    }
+    spans = spans.sorted(key: sp => sp.start)
+    let lane-ends = ()
+    for sp in spans {
+      let placed = false
+      for (li, e) in lane-ends.enumerate() {
+        if not placed and sp.start > e {
+          lane-ends.at(li) = sp.end
+          auto-lane.insert(str(sp.i), li)
+          placed = true
+        }
+      }
+      if not placed {
+        lane-ends.push(sp.end)
+        auto-lane.insert(str(sp.i), lane-ends.len() - 1)
+      }
+    }
+  }
+
+  for (conn-index, conn) in connections.enumerate() {
     let from-name = conn.at("from")
     let to-name = conn.at("to")
     let conn-type = conn.at("type", default: "skip")
     let conn-mode = conn.at("mode", default: "flat")
     let conn-pos = conn.at("pos", default: 1.25)
+    if conn-pos == auto {
+      let lane = auto-lane.at(str(conn-index), default: 0)
+      conn-pos = max-half-extent + conn.at("clearance", default: lane-clearance) + lane * lane-gap
+    }
     let conn-label = conn.at("label", default: none)
     let conn-opacity = conn.at("opacity", default: 0.7)
     let touch-layer = conn.at("touch-layer", default: false)
