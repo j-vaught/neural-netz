@@ -1,7 +1,3 @@
-# Typst build artifacts
-*.pdf
-!examples/**/*.pdf
-
 # Regression harness working output (goldens are tracked)
 tests/current/
 
