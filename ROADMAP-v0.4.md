@@ -99,7 +99,7 @@ everything a body emits, so wrapping the connection body in `on-layer(-1, ...)` 
 entire class of defects without a depth-sorting rewrite. Default `"front"` preserves v0.3.
 
 **Do not rebuild this without asking.** It was implemented in `f7d0e2e` and reverted in
-`8e0d7b3` by preference, not because it failed. Routing over the top of the stack is the
+`32bf8b7` by preference, not because it failed. Routing over the top of the stack is the
 house style here, as it is in PlotNeuralNet and in the bundled U-Net example, so a route
 passing behind a block is not wanted even when it is drawn correctly. The revert is the
 decision, not a rollback of a broken feature.
