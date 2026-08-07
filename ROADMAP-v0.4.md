@@ -8,6 +8,18 @@ fix already applied on top of `v0.3.0`).
 This document is the working plan for v0.4. Items are ordered easiest to hardest, with
 dependencies resolved so that a prerequisite always appears before anything that needs it.
 
+## Status
+
+| Item | State |
+|---|---|
+| Step 0. Regression harness | done |
+| 1. Custom layer bandfill default | done, tag `v0.4-tier1.1` |
+| 2. Label offsets | done |
+| 3. Export a shear helper | next |
+
+Everything from Tier 1 item 3 onward is untouched. The palette overhaul is planned but
+deliberately out of scope for the items above.
+
 ## Governing rule
 
 Every new feature is an **opt-in keyword whose default reproduces v0.3 behavior exactly**.

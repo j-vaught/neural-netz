@@ -335,6 +335,20 @@ canvas(length: 1cm * scale-factor, {
     }
   }
   
+  // Helper function: Display a layer's label.
+  // `label-dx` / `label-dy` shift it from the position its layer type places it
+  // at, and `label-anchor` chooses which edge of the text box is pinned there.
+  // Labels are otherwise placed with no awareness of their neighbours, so on
+  // tightly spaced layers this is what separates them without having to move
+  // the layers apart.
+  let draw-layer-label(l, label, cx, cy, size: none) = {
+    if label == none { return }
+    let font-size = if size == none { font-sizes.label } else { size }
+    content((cx + l.at("label-dx", default: 0), cy + l.at("label-dy", default: 0)),
+      anchor: l.at("label-anchor", default: "center"),
+      [#text(size: scaled-font(font-size), weight: "bold", label)])
+  }
+
   let draw-arrow-icon(x1, y1, x2, y2, opacity: 0.7) = {
     let dx = x2 - x1
     let dy = y2 - y1
@@ -515,8 +529,7 @@ canvas(length: 1cm * scale-factor, {
           
           let label = layer-spec.at("label", default: none)
           if label != none {
-            content((mid-x + total-width / 2, mid-y - 0.5), 
-              [#text(size: scaled-font(font-sizes.layer-label), weight: "bold", label)])
+            draw-layer-label(layer-spec, label, mid-x + total-width / 2, mid-y - 0.5, size: font-sizes.layer-label)
           }
           
           // Display diagonal label if provided
@@ -772,8 +785,7 @@ canvas(length: 1cm * scale-factor, {
         }
         
         if label != none {
-          content((x + actual-w/2, y-offset - 0.5), 
-            [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+          draw-layer-label(l, label, x + actual-w/2, y-offset - 0.5)
         }
         
         prev-x = x + actual-w
@@ -858,8 +870,7 @@ canvas(length: 1cm * scale-factor, {
         
         // Display label below channel numbers
         if label != none {
-          content((center-x, y-offset - 0.5), 
-            [#text(size: scaled-font(font-sizes.layer-label), weight: "bold", label)])
+          draw-layer-label(l, label, center-x, y-offset - 0.5, size: font-sizes.layer-label)
         }
         
         // Display xlabel if provided
@@ -973,8 +984,7 @@ canvas(length: 1cm * scale-factor, {
       }
       
       if label != none {
-        content((x + w/2, y-offset - 0.8), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, x + w/2, y-offset - 0.8)
       }
       
       prev-x = x + w
@@ -1108,8 +1118,7 @@ canvas(length: 1cm * scale-factor, {
       
       // Display label below channel numbers
       if label != none {
-        content((center-x, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.layer-label), weight: "bold", label)])
+        draw-layer-label(l, label, center-x, y-offset - 0.5, size: font-sizes.layer-label)
       }
       
       // Display xlabel if provided
@@ -1186,8 +1195,7 @@ canvas(length: 1cm * scale-factor, {
       draw-channels-labels(channels, pool-x + w/2, pool-x + w, y-offset, ox, oy)
       
       if label != none {
-        content((pool-x + w/2, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, pool-x + w/2, y-offset - 0.5)
       }
       
       if i > 0 {
@@ -1257,8 +1265,7 @@ canvas(length: 1cm * scale-factor, {
       draw-channels-labels(channels, unpool-x + w/2, unpool-x + w, y-offset, ox, oy)
       
       if label != none {
-        content((unpool-x + w/2, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, unpool-x + w/2, y-offset - 0.5)
       }
       
       // Track position if named
@@ -1314,8 +1321,7 @@ canvas(length: 1cm * scale-factor, {
       draw-channels-labels(channels, x + w/2, x + w, y-offset, ox, oy)
       
       if label != none {
-        content((x + w/2, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, x + w/2, y-offset - 0.5)
       }
       
       // Track position if named
@@ -1367,8 +1373,7 @@ canvas(length: 1cm * scale-factor, {
       draw-channels-labels(channels, x + w/2, x + w, y-offset, ox, oy)
       
       if label != none {
-        content((x + w/2, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, x + w/2, y-offset - 0.5)
       }
       
       // Track position if named
@@ -1420,8 +1425,7 @@ canvas(length: 1cm * scale-factor, {
       draw-channels-labels(channels, x + w/2, x + w, y-offset, ox, oy)
       
       if label != none {
-        content((x + w/2, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, x + w/2, y-offset - 0.5)
       }
       
       // Track position if named
@@ -1473,8 +1477,7 @@ canvas(length: 1cm * scale-factor, {
       draw-channels-labels(channels, x + w/2, x + w, y-offset, ox, oy)
       
       if label != none {
-        content((x + w/2, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, x + w/2, y-offset - 0.5)
       }
       
       // Track position if named
@@ -1541,8 +1544,7 @@ canvas(length: 1cm * scale-factor, {
       
       // Display label below the sum node
       if label != none {
-        content((center-x, center-y - 1.5 * radius), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, center-x, center-y - 1.5 * radius)
       }
       
       prev-x = center-x + radius
@@ -1597,8 +1599,7 @@ canvas(length: 1cm * scale-factor, {
       draw-channels-labels(channels, x + w/2, x + w, y-offset, ox, oy)
       
       if label != none {
-        content((x + w/2, y-offset - 0.5), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, x + w/2, y-offset - 0.5)
       }
       
       // Track position if named
@@ -1655,8 +1656,7 @@ canvas(length: 1cm * scale-factor, {
           [#text(size: scaled-font(font-sizes.output-number), str(classes))])
       }
       if label != none {
-        content((x + w/2, y-offset - 0.6), 
-          [#text(size: scaled-font(font-sizes.label), weight: "bold", label)])
+        draw-layer-label(l, label, x + w/2, y-offset - 0.6)
       }
       
       // Track position if named

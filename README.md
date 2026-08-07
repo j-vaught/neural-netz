@@ -106,6 +106,26 @@ Using `show-legend: true` you can add a smart legend to your visual !
 And if you network does not fit the page width of your Typst document, **you can reduce the scale by giving `scale: 50%` as argument of `draw-network`** (adjust the scale value to your need).
 
 
+### Label placement
+
+Layer labels sit at a fixed spot beneath each block, so long labels on closely spaced layers overlap. Rather than spreading the layers apart to solve a typesetting problem, three per-layer options move the label itself:
+
+| Option | Default | Effect |
+|---|---|---|
+| `label-dx` | `0` | Shift the label horizontally |
+| `label-dy` | `0` | Shift the label vertically |
+| `label-anchor` | `"center"` | Which edge of the text box is pinned to the label position |
+
+```typ
+#draw-network((
+  (type: "conv", widths: (0.3,), height: 3, depth: 3, label: "convolution"),
+  (type: "conv", widths: (0.3,), height: 3, depth: 3, label: "downsample", offset: 0.58, label-dy: -0.55),
+  (type: "conv", widths: (0.3,), height: 3, depth: 3, label: "projection", offset: 0.58),
+))
+```
+
+Dropping one label to a second line clears the row. Anchoring the outer labels by their facing edges (`label-anchor: "east"` with a negative `label-dx`, and `"west"` with a positive one) fans them sideways instead.
+
 ### Adding other connections
 
 The main axis connections are drawn automatically, except for the input layer. You can overwrite that by using the boolean `show-connection` to tell if the connection **after** a layer should be drawn or not. You can also draw extra connections using the `connections` argument of `draw-network`. In order to make reference to a layer, it will need a `name`:
