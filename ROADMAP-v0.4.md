@@ -162,9 +162,17 @@ Backbone, neck and head are the phrases anyone uses to explain these diagrams, a
 no way to draw them. All required geometry is already in `layer-positions` by the time the
 connection loop runs. Draw a brace or tinted band spanning min-x to max-x below the stack.
 
-*Test:* four layers with two groups covering layers 1-2 and 3-4. Then the edge cases: a
-group spanning a single layer, and two adjacent groups, to confirm spans do not run
-together.
+Drawn as a square bracket, not a brace: everything else in the package has flat edges, and a
+brace would be the only curve on the page.
+
+Placement needs the lowest point any route reaches, not just the tallest layer. The first
+version measured from layer extent alone and the YOLO neck bracket landed on top of a skip
+routed beneath the stack. Routes running underneath are now tracked during the connection
+pass and brackets sit below them.
+
+*Test:* four layers with two groups covering layers 1-2 and 3-4. Then the edge cases in one
+figure: a group spanning a single layer, two adjacent groups, and an enclosing group pushed
+to its own row with `offset`.
 
 ### 8. Repeat notation: `repeat: N`
 

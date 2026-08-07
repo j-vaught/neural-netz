@@ -24,6 +24,7 @@
 #let draw-network(
   layers,
   connections: (),
+  groups: (),
   palette: "warm",
   show-legend: false,
   legend-title: "Layers",
@@ -1890,6 +1891,9 @@ canvas(length: 1cm * scale-factor, {
   // heads afterwards restores them without disturbing the draw order of
   // anything else.
   let anchored-heads = ()
+  // Lowest point any route reaches, so group brackets can sit clear of routes
+  // that run beneath the stack rather than colliding with them.
+  let lowest-route-y = arrow-axis-y
 
   // The main axis flow gets a legend entry of its own when named. Without it a
   // legend can explain every skip in a figure and say nothing about the arrows
@@ -2036,6 +2040,7 @@ canvas(length: 1cm * scale-factor, {
         
         if conn-mode == "flat" {
           let down-y = from-anchor.at(1) - conn-pos
+          lowest-route-y = calc.min(lowest-route-y, down-y)
           let waypoint1 = (from-anchor.at(0), down-y)
           let waypoint2 = (to-anchor.at(0), down-y)
           
@@ -2048,6 +2053,7 @@ canvas(length: 1cm * scale-factor, {
         } else if conn-mode == "depth" {
           let (ox, oy) = get-depth-offsets(conn-pos * 2.5)
           let waypoint1 = (from-anchor.at(0) - ox, from-anchor.at(1) - oy)
+          lowest-route-y = calc.min(lowest-route-y, waypoint1.at(1))
           // For sum circles, adjust waypoint2 x-coordinate to account for south-west arrival
           let waypoint2-x = if to-type == "sum" {
             // Compensate for the south-west arrival offset (radius * cos(225°))
@@ -2090,6 +2096,38 @@ canvas(length: 1cm * scale-factor, {
     draw-arrow-icon(mx - 0.5, my, mx + 0.5, my, opacity: 0.7)
   }
   
+  // Group brackets. Backbone, neck and head are the phrases anyone uses to
+  // explain one of these figures, and until now there was no way to draw them.
+  //
+  // A square bracket rather than a brace: everything else in the package is
+  // drawn with flat edges, and a curly brace would be the only curve on the
+  // page. The ends are inset slightly so two adjacent groups read as two rather
+  // than running into one continuous rule.
+  if groups.len() > 0 {
+    let group-tick = 0.22
+    let group-inset = 0.12
+    for g in groups {
+      let f = g.at("from")
+      let t = g.at("to")
+      if f not in layer-positions or t not in layer-positions { continue }
+      let a = layer-positions.at(f)
+      let b = layer-positions.at(t)
+      // Span the drawn footprint, which leans right of the front face by the
+      // isometric shear, not just the front faces.
+      let x0 = calc.min(a.x, b.x) + group-inset
+      let x1 = calc.max(a.x + a.w + a.ox, b.x + b.w + b.ox) - group-inset
+      let y = calc.min(arrow-axis-y - max-half-extent, lowest-route-y) - g.at("offset", default: 1.15)
+      let paint = g.at("color", default: colors.connection)
+      line((x0, y + group-tick), (x0, y), (x1, y), (x1, y + group-tick),
+        stroke: (paint: paint, thickness: strokes.connection.thickness, cap: "butt", join: "miter"))
+      let label = g.at("label", default: none)
+      if label != none {
+        content(((x0 + x1) / 2, y - 0.34),
+          [#text(size: scaled-font(font-sizes.label), weight: "bold", fill: paint, label)])
+      }
+    }
+  }
+
   if show-legend {
     // Position legend after the last layer, accounting for its width and depth
     let legend-x = prev-x + prev-depth-offset + 1.0

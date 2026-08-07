@@ -27,6 +27,7 @@ You can then call `draw-network` which has the following arguments:
 #draw-network(
   layers,
   connections: (),
+  groups: (),
   palette: "warm",
   show-legend: false,
   legend-title: "Layers",
@@ -229,6 +230,22 @@ The route is placed clear of the tallest layer, and its height comes from how fa
 Routes of equal reach share a height. Where two of them overlap, the second is routed to the opposite side of the axis at the same height rather than being pushed further out than its reach warrants.
 
 `lane-unit` on `draw-network` sets the spacing between heights, and `clearance` on a connection sets how far the lowest route sits from the blocks. Numeric `pos` is unaffected and keeps its current meaning.
+
+### Grouping layers
+
+Backbone, neck and head are the phrases anyone uses out loud to explain one of these figures. `groups` draws them:
+
+```typ
+#draw-network(layers, groups: (
+  (from: "p1", to: "p5", label: "Backbone"),
+  (from: "u4", to: "n5", label: "Neck (PAN-FPN)"),
+  (from: "head", to: "head", label: "Head"),
+))
+```
+
+Each entry spans from one named layer to another, inclusive, and `from` and `to` may be the same layer. The bracket covers the drawn footprint rather than the front faces, so it sits under the whole block including its isometric lean, and its ends are inset slightly so two adjacent groups read as two rather than as one continuous rule.
+
+Brackets are placed below everything else in the figure, including any connection routed underneath the stack. Use `offset` on a group to push it further down, which is how you stack a group that encloses other groups onto its own row, and `color` to tint one.
 
 ### Predefined layer types
 
