@@ -20,6 +20,10 @@
 // Change a stage's depth and its spacing follows. Labels are diagonal, which is
 // what lets the gaps stay this tight: with horizontal labels the spacing ends up
 // dictated by how wide the words are rather than by the drawing.
+//
+// Groups are drawn in two rows, one naming each stage and one naming the three
+// parts anyone says out loud. Both are below the figure, clear of the skips that
+// route underneath it.
 
 // ---- the pyramid, in one place ----
 #let d-in = 8      // 640
@@ -59,7 +63,7 @@
   (type: "convres", widths: (0.6,), height: d-p5, depth: d-p5, label: "C3k2", channels: (256, 20), name: "c5", offset: sep(d-p5), ..lbl),
 
   (type: "custom", width: 0.6, height: d-p5, depth: d-p5, label: "SPPF", channels: (256, 20),
-    fill: sppf-color, opacity: 0.9, legend: "SPPF", offset: sep(d-p5), ..lbl),
+    fill: sppf-color, opacity: 0.9, legend: "SPPF", name: "sppf", offset: sep(d-p5), ..lbl),
   (type: "custom", width: 0.6, height: d-p5, depth: d-p5, label: "C2PSA", channels: (256, 20),
     fill: attn-color, opacity: 0.9, legend: "C2PSA (attention)", name: "p5", offset: sep(d-p5), ..lbl),
 
@@ -86,7 +90,23 @@
   (type: "custom", width: 0.7, height: 5, depth: d-p5, label: "Detect", channels: ("P3 / P4 / P5",),
     fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "head",
     offset: clear(d-p5) + 1.4, ..lbl),
-  (type: "output", label: "boxes + cls", height: 4, depth: 0.3, offset: sep(d-p5), ..lbl),
+  (type: "output", label: "boxes + cls", height: 4, depth: 0.3, name: "out", offset: sep(d-p5), ..lbl),
+), groups: (
+  // Two levels. The inner row names each stage, the outer row the three parts
+  // anyone says out loud when explaining the architecture. Nesting works because
+  // offset is per group, so an enclosing bracket simply takes its own row.
+  (from: "p1", to: "c2", label: "stem"),
+  (from: "p3d", to: "p3", label: "P3 stage"),
+  (from: "p4d", to: "p4", label: "P4 stage"),
+  (from: "p5d", to: "c5", label: "P5 stage"),
+  (from: "sppf", to: "p5", label: "context"),
+  (from: "u4", to: "n3", label: "top-down"),
+  (from: "d4", to: "n5", label: "bottom-up"),
+  (from: "head", to: "out", label: "detect"),
+
+  (from: "p1", to: "p5", label: "Backbone", offset: 2.5, color: rgb("#73000A")),
+  (from: "u4", to: "n5", label: "Neck (PAN-FPN)", offset: 2.5, color: rgb("#73000A")),
+  (from: "head", to: "out", label: "Head", offset: 2.5, color: rgb("#73000A")),
 ), connections: (
   (from: "p4", to: "cat4", type: "skip", mode: "air", pos: 2.6),
   (from: "p3", to: "cat3", type: "skip", mode: "air", pos: 4.0),
