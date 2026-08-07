@@ -4,6 +4,10 @@
 
 // Tier 2.8 -- repeat: N.
 //
+// repeat: N means N identical copies of the block in series, each feeding the
+// next. It describes one layer entry, not a run of them: (conv, pool) repeated
+// as a unit is a different thing and is not expressible here.
+//
 // Depth-scaled models fake block repetition by stuffing extra entries into
 // `widths`. That is a visual coincidence rather than semantics: the package has
 // no idea the block is repeated, so it cannot label the repeat or bracket it,
