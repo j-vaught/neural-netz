@@ -271,27 +271,17 @@ That makes a stage ending in a pool worth writing carefully. Putting `repeat: 3`
 
 ### Where a connection arrives
 
-By default a connection arrives on the main axis just before its target. `touch-layer: true` makes it land on the target itself, at one of three points chosen by the routing mode. That is enough for one or two routes and runs out immediately after: a fourth connection into the same layer has to reuse a point, and two in the same mode land on the same pixel with their arrowheads stacked.
+By default a connection arrives on the main axis just before its target. `touch-layer: true` lands it on the target itself, choosing a side from the routing mode: `air` arrives on the top edge, `flat` on the bottom, `depth` on the left. Two routes in the same mode therefore land on the same point, with their arrowheads stacked.
 
-`to-anchor` names the point instead, and `arrive-offset` shifts along the edge it sits on:
-
-| Anchor | Point | `arrive-offset` runs |
-|---|---|---|
-| `"nw"` | West side, top edge | Along the depth direction |
-| `"sw"` | West side, bottom edge | Along the depth direction |
-| `"n"` | Front top edge, centred | Horizontally |
-| `"s"` | Front bottom edge, centred | Horizontally |
-| `"w"` | Left edge, centred vertically | Vertically |
+`arrive-offset` spreads along whichever edge the mode already chose:
 
 ```typ
-(from: "a", to: "cat", to-anchor: "nw", arrive-offset: -0.3, pos: auto),
-(from: "b", to: "cat", to-anchor: "nw", arrive-offset: 0,    pos: auto),
-(from: "c", to: "cat", to-anchor: "nw", arrive-offset: 0.3,  pos: auto),
+(from: "a", to: "cat", touch-layer: true, pos: auto, arrive-offset: -0.35),
+(from: "b", to: "cat", touch-layer: true, pos: auto, arrive-offset: 0),
+(from: "c", to: "cat", touch-layer: true, pos: auto, arrive-offset: 0.35),
 ```
 
-Each anchor carries the edge it sits on, and the offset moves along that edge, so an offset route still lands on the block. That matters most for `"nw"` and `"sw"`: the west side's top and bottom edges run along the isometric depth direction, not horizontally, so shifting in x alone would walk the arrival off the block entirely.
-
-Several routes can then fan into one layer, which is what a concat needs. `touch-layer` is unchanged and still available.
+Several routes can then fan into one layer, which is what a concat needs. The offset runs along the edge rather than in x: the top and bottom edges of a block's west side follow the isometric depth direction, so shifting horizontally would walk the arrival off the block.
 
 ### Predefined layer types
 

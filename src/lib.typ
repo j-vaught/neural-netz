@@ -2029,40 +2029,16 @@ canvas(length: 1cm * scale-factor, {
       
       // Determine target anchor point
       let to-type = to-pos.at("type", default: none)
-      // Named arrival anchor. `touch-layer` resolves to exactly three points,
-      // one per routing mode, so a fourth connection into the same layer has to
-      // reuse one and two in the same mode land on the identical pixel with
-      // their arrowheads stacked. Naming the point instead, with an offset along
-      // the edge it sits on, lets several routes fan into one layer, which is
-      // what a concat node needs.
-      let to-anchor-name = conn.at("to-anchor", default: none)
+      // Arrival point on the target layer.
+      //
+      // `touch-layer` already picks a side from the routing mode: air arrives on
+      // the top edge, flat on the bottom, depth on the left. `arrive-offset`
+      // spreads along that same edge, so several routes can fan into one layer
+      // without inventing a second vocabulary for something the mode already
+      // says. The offset runs along the edge rather than in x, because the top
+      // and bottom edges of the west side follow the isometric depth direction.
       let arrive-off = conn.at("arrive-offset", default: 0)
-      let to-anchor = if to-anchor-name != none {
-        let bx = to-pos.x
-        let by = to-pos.y
-        let bw = to-pos.w
-        let bh = to-pos.h
-        let box-ox = to-pos.ox
-        let box-oy = to-pos.oy
-        // Each anchor carries the edge it sits on, and arrive-offset moves along
-        // that edge. Offsetting in x alone would walk the point off any edge that
-        // is not horizontal, and the two that matter for fan-in are not: the west
-        // side's top and bottom edges run along the isometric depth direction.
-        let diag = calc.sqrt(box-ox * box-ox + box-oy * box-oy)
-        let du = if diag > 0 { (box-ox / diag, box-oy / diag) } else { (1, 0) }
-        let table = (
-          nw: (point: (bx + box-ox / 2, by + bh + box-oy / 2), dir: du),
-          sw: (point: (bx + box-ox / 2, by + box-oy / 2), dir: du),
-          n: (point: (bx + bw / 2 + box-ox / 2, by + bh + box-oy / 2), dir: (1, 0)),
-          s: (point: (bx + bw / 2 + box-ox / 2, by + box-oy / 2), dir: (1, 0)),
-          w: (point: (bx, by + bh / 2 + box-oy / 2), dir: (0, 1)),
-        )
-        if to-anchor-name not in table {
-          panic("to-anchor must be one of " + repr(table.keys()) + "; got " + repr(to-anchor-name))
-        }
-        let a = table.at(to-anchor-name)
-        (a.point.at(0) + a.dir.at(0) * arrive-off, a.point.at(1) + a.dir.at(1) * arrive-off)
-      } else if touch-layer {
+      let to-anchor = if touch-layer {
         // Special case: arrive at specific edge of west side of destination layer
         let base-x = to-pos.x
         let base-y = to-pos.y
@@ -2070,15 +2046,16 @@ canvas(length: 1cm * scale-factor, {
         let ox = to-pos.ox
         let oy = to-pos.oy
         
+        let diag = calc.max(calc.sqrt(ox * ox + oy * oy), 0.0001)
         if conn-mode == "air" {
-          // Middle of top diagonal edge of west side
-          (base-x + ox/2, base-y + h + oy/2)
+          // Top diagonal edge of the west side, offset along it
+          (base-x + ox/2 + arrive-off * ox / diag, base-y + h + oy/2 + arrive-off * oy / diag)
         } else if conn-mode == "depth" {
-          // Middle of left edge of west side
-          (base-x, base-y + h/2 + oy/2)
+          // Left edge of the west side, offset vertically
+          (base-x, base-y + h/2 + oy/2 + arrive-off)
         } else {
-          // "flat" - Middle of bottom edge of west side
-          (base-x + ox/2, base-y + oy/2)
+          // "flat" - bottom diagonal edge of the west side, offset along it
+          (base-x + ox/2 + arrive-off * ox / diag, base-y + oy/2 + arrive-off * oy / diag)
         }
       } else if to-type == "sum" {
         // For sum layers, use the stored center-x (which already accounts for depth offset)

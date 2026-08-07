@@ -222,35 +222,27 @@ case.
 
 ## Tier 3. Moderate
 
-### 9. Named anchors and `arrive-offset`
+### 9. `arrive-offset` -- done, without the named-anchor table
 
-`touch-layer: true` resolves to exactly three arrival points per layer
-(`src/lib.typ:1768-1782`), so a fourth connection must reuse one, and two connections in the
-same mode land on the identical pixel with stacked arrowheads. Replace with a named-anchor
-table (`"nw"`, `"w"`, `"sw"`, `"n"`, `"s"`, ...) plus a scalar offset along the chosen edge.
-Retain `touch-layer: true` as an alias for current behavior. Fan-in to a concat node is
-common enough to deserve first-class support.
+Shipped as an offset alone. A named-anchor table of `nw`, `n`, `w`, `sw`, `s` was built first
+and removed: the names describe positions on an isometric slab, where on a thin block such as
+a concat, the very block a fan-in targets, `nw` and `n` land within a few pixels of each
+other. Five names for three usable points is a vocabulary that does not earn itself.
 
-Shipped as arrival anchors only. Departure is still the arrow-segment midpoint or the
+`touch-layer` already selects a side from the routing mode, so `arrive-offset` spreads along
+that same edge and no second vocabulary is needed. The offset runs along the edge rather than
+in x, since the top and bottom edges of the west side follow the isometric depth direction.
+
+Terminating arrowheads were also tried, drawing the head at the arrival point rather than
+mid-segment, and reverted. Mid-segment heads are the convention throughout the package and
+the inconsistency was not wanted.
+
+Arrival is still the only side handled. Departure stays the arrow-segment midpoint or the
 `touch-layer` edge, since the stacking problem is fan-in: several routes converging on one
 concat, not several leaving one block.
 
-`touch-layer` is retained unchanged rather than reimplemented in terms of the table. It picks
-its point from the routing mode, which the named anchors deliberately do not, so expressing
-one in terms of the other would have meant changing what existing figures draw.
-
-Each anchor carries the edge it sits on and the offset moves along that edge. The first
-version offset in x alone, which walked the arrival off any edge that is not horizontal: the
-west side's top and bottom edges run along the isometric depth direction, so two of three
-fanned-in routes ended in mid-air above the block rather than on it.
-
-Note that arrowheads remain mid-segment, as everywhere else in the package, so on a long final
-descent the head sits well above the block it arrives at. That is pre-existing behaviour
-rather than something this item introduced, but it makes a fan-in harder to read than it
-should be, and it is part of what item 14's junction markers would address.
-
-*Test:* one target layer with three incoming skips, all on anchor `"nw"`, at
-`arrive-offset: -0.3, 0, 0.3`, then all five anchors on one layer with a route each.
+*Test:* three routes into one concat with no offsets, showing the stacked arrowheads, then
+the same three offset apart, then the bottom and left edges.
 
 ### 10. `pos: auto` lane assignment -- done, ahead of its tier
 
