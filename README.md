@@ -275,13 +275,13 @@ By default a connection arrives on the main axis just before its target. `touch-
 
 `to-anchor` names the point instead, and `arrive-offset` shifts along the edge it sits on:
 
-| Anchor | Point |
-|---|---|
-| `"nw"` | Top edge, at the west corner |
-| `"n"` | Top edge, centred |
-| `"w"` | Left edge, centred vertically |
-| `"sw"` | Bottom edge, at the west corner |
-| `"s"` | Bottom edge, centred |
+| Anchor | Point | `arrive-offset` runs |
+|---|---|---|
+| `"nw"` | West side, top edge | Along the depth direction |
+| `"sw"` | West side, bottom edge | Along the depth direction |
+| `"n"` | Front top edge, centred | Horizontally |
+| `"s"` | Front bottom edge, centred | Horizontally |
+| `"w"` | Left edge, centred vertically | Vertically |
 
 ```typ
 (from: "a", to: "cat", to-anchor: "nw", arrive-offset: -0.3, pos: auto),
@@ -289,7 +289,9 @@ By default a connection arrives on the main axis just before its target. `touch-
 (from: "c", to: "cat", to-anchor: "nw", arrive-offset: 0.3,  pos: auto),
 ```
 
-Offsets run horizontally on the top and bottom edges and vertically on the left one. Several routes can then fan into one layer, which is what a concat needs. `touch-layer` is unchanged and still available.
+Each anchor carries the edge it sits on, and the offset moves along that edge, so an offset route still lands on the block. That matters most for `"nw"` and `"sw"`: the west side's top and bottom edges run along the isometric depth direction, not horizontally, so shifting in x alone would walk the arrival off the block entirely.
+
+Several routes can then fan into one layer, which is what a concat needs. `touch-layer` is unchanged and still available.
 
 ### Predefined layer types
 

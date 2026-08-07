@@ -239,6 +239,16 @@ concat, not several leaving one block.
 its point from the routing mode, which the named anchors deliberately do not, so expressing
 one in terms of the other would have meant changing what existing figures draw.
 
+Each anchor carries the edge it sits on and the offset moves along that edge. The first
+version offset in x alone, which walked the arrival off any edge that is not horizontal: the
+west side's top and bottom edges run along the isometric depth direction, so two of three
+fanned-in routes ended in mid-air above the block rather than on it.
+
+Note that arrowheads remain mid-segment, as everywhere else in the package, so on a long final
+descent the head sits well above the block it arrives at. That is pre-existing behaviour
+rather than something this item introduced, but it makes a fan-in harder to read than it
+should be, and it is part of what item 14's junction markers would address.
+
 *Test:* one target layer with three incoming skips, all on anchor `"nw"`, at
 `arrive-offset: -0.3, 0, 0.3`, then all five anchors on one layer with a route each.
 

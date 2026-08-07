@@ -2044,19 +2044,24 @@ canvas(length: 1cm * scale-factor, {
         let bh = to-pos.h
         let box-ox = to-pos.ox
         let box-oy = to-pos.oy
-        // Offsets run along whichever edge the anchor sits on: horizontally for
-        // the top and bottom edges, vertically for the left one.
+        // Each anchor carries the edge it sits on, and arrive-offset moves along
+        // that edge. Offsetting in x alone would walk the point off any edge that
+        // is not horizontal, and the two that matter for fan-in are not: the west
+        // side's top and bottom edges run along the isometric depth direction.
+        let diag = calc.sqrt(box-ox * box-ox + box-oy * box-oy)
+        let du = if diag > 0 { (box-ox / diag, box-oy / diag) } else { (1, 0) }
         let table = (
-          nw: (bx + box-ox / 2 + arrive-off, by + bh + box-oy / 2),
-          n: (bx + bw / 2 + box-ox / 2 + arrive-off, by + bh + box-oy / 2),
-          sw: (bx + box-ox / 2 + arrive-off, by + box-oy / 2),
-          s: (bx + bw / 2 + box-ox / 2 + arrive-off, by + box-oy / 2),
-          w: (bx, by + bh / 2 + box-oy / 2 + arrive-off),
+          nw: (point: (bx + box-ox / 2, by + bh + box-oy / 2), dir: du),
+          sw: (point: (bx + box-ox / 2, by + box-oy / 2), dir: du),
+          n: (point: (bx + bw / 2 + box-ox / 2, by + bh + box-oy / 2), dir: (1, 0)),
+          s: (point: (bx + bw / 2 + box-ox / 2, by + box-oy / 2), dir: (1, 0)),
+          w: (point: (bx, by + bh / 2 + box-oy / 2), dir: (0, 1)),
         )
         if to-anchor-name not in table {
           panic("to-anchor must be one of " + repr(table.keys()) + "; got " + repr(to-anchor-name))
         }
-        table.at(to-anchor-name)
+        let a = table.at(to-anchor-name)
+        (a.point.at(0) + a.dir.at(0) * arrive-off, a.point.at(1) + a.dir.at(1) * arrive-off)
       } else if touch-layer {
         // Special case: arrive at specific edge of west side of destination layer
         let base-x = to-pos.x
