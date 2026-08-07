@@ -269,6 +269,28 @@ That makes a stage ending in a pool worth writing carefully. Putting `repeat: 3`
 
 `repeat` describes one layer entry, not a run of them, so a repeated pair such as `(attention, mlp)` cannot be expressed with it.
 
+### Where a connection arrives
+
+By default a connection arrives on the main axis just before its target. `touch-layer: true` makes it land on the target itself, at one of three points chosen by the routing mode. That is enough for one or two routes and runs out immediately after: a fourth connection into the same layer has to reuse a point, and two in the same mode land on the same pixel with their arrowheads stacked.
+
+`to-anchor` names the point instead, and `arrive-offset` shifts along the edge it sits on:
+
+| Anchor | Point |
+|---|---|
+| `"nw"` | Top edge, at the west corner |
+| `"n"` | Top edge, centred |
+| `"w"` | Left edge, centred vertically |
+| `"sw"` | Bottom edge, at the west corner |
+| `"s"` | Bottom edge, centred |
+
+```typ
+(from: "a", to: "cat", to-anchor: "nw", arrive-offset: -0.3, pos: auto),
+(from: "b", to: "cat", to-anchor: "nw", arrive-offset: 0,    pos: auto),
+(from: "c", to: "cat", to-anchor: "nw", arrive-offset: 0.3,  pos: auto),
+```
+
+Offsets run horizontally on the top and bottom edges and vertically on the left one. Several routes can then fan into one layer, which is what a concat needs. `touch-layer` is unchanged and still available.
+
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.

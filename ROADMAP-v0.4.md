@@ -231,8 +231,16 @@ table (`"nw"`, `"w"`, `"sw"`, `"n"`, `"s"`, ...) plus a scalar offset along the 
 Retain `touch-layer: true` as an alias for current behavior. Fan-in to a concat node is
 common enough to deserve first-class support.
 
+Shipped as arrival anchors only. Departure is still the arrow-segment midpoint or the
+`touch-layer` edge, since the stacking problem is fan-in: several routes converging on one
+concat, not several leaving one block.
+
+`touch-layer` is retained unchanged rather than reimplemented in terms of the table. It picks
+its point from the routing mode, which the named anchors deliberately do not, so expressing
+one in terms of the other would have meant changing what existing figures draw.
+
 *Test:* one target layer with three incoming skips, all on anchor `"nw"`, at
-`arrive-offset: -0.3, 0, 0.3`. Expect three distinct, evenly spaced arrowheads.
+`arrive-offset: -0.3, 0, 0.3`, then all five anchors on one layer with a route each.
 
 ### 10. `pos: auto` lane assignment -- done, ahead of its tier
 

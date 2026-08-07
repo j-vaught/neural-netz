@@ -2029,7 +2029,35 @@ canvas(length: 1cm * scale-factor, {
       
       // Determine target anchor point
       let to-type = to-pos.at("type", default: none)
-      let to-anchor = if touch-layer {
+      // Named arrival anchor. `touch-layer` resolves to exactly three points,
+      // one per routing mode, so a fourth connection into the same layer has to
+      // reuse one and two in the same mode land on the identical pixel with
+      // their arrowheads stacked. Naming the point instead, with an offset along
+      // the edge it sits on, lets several routes fan into one layer, which is
+      // what a concat node needs.
+      let to-anchor-name = conn.at("to-anchor", default: none)
+      let arrive-off = conn.at("arrive-offset", default: 0)
+      let to-anchor = if to-anchor-name != none {
+        let bx = to-pos.x
+        let by = to-pos.y
+        let bw = to-pos.w
+        let bh = to-pos.h
+        let box-ox = to-pos.ox
+        let box-oy = to-pos.oy
+        // Offsets run along whichever edge the anchor sits on: horizontally for
+        // the top and bottom edges, vertically for the left one.
+        let table = (
+          nw: (bx + box-ox / 2 + arrive-off, by + bh + box-oy / 2),
+          n: (bx + bw / 2 + box-ox / 2 + arrive-off, by + bh + box-oy / 2),
+          sw: (bx + box-ox / 2 + arrive-off, by + box-oy / 2),
+          s: (bx + bw / 2 + box-ox / 2 + arrive-off, by + box-oy / 2),
+          w: (bx, by + bh / 2 + box-oy / 2 + arrive-off),
+        )
+        if to-anchor-name not in table {
+          panic("to-anchor must be one of " + repr(table.keys()) + "; got " + repr(to-anchor-name))
+        }
+        table.at(to-anchor-name)
+      } else if touch-layer {
         // Special case: arrive at specific edge of west side of destination layer
         let base-x = to-pos.x
         let base-y = to-pos.y
