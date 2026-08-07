@@ -181,18 +181,6 @@ A connection descending between two layers arrives at the midpoint of the arrow 
 
 Note that the default multiplier of `0.3` has no exact binary representation, so `depth-shear(4.5)` is `1.3499999999999999`. Compare with a tolerance if you compare at all.
 
-### Routing connections behind layers
-
-Connections are drawn after every layer box, so a route is painted over anything it crosses. Give a connection `z: "behind"` and it goes underneath instead:
-
-```typ
-(from: "a", to: "c", type: "skip", mode: "flat", pos: 0.8, z: "behind")
-```
-
-Because layers are semi-transparent, a route passing behind stays faintly visible and reads as depth rather than disappearing. The connection's label is always drawn in front, so sending a route behind does not wash out its annotation. The default is `"front"`; any other value is an error.
-
-This is the general remedy for a route crossing a block. `min-clear-offset` above is the narrower one: it stops you from routing into a gap that only looks empty.
-
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.

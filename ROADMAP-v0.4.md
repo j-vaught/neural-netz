@@ -16,8 +16,7 @@ dependencies resolved so that a prerequisite always appears before anything that
 | 1. Custom layer bandfill default | done, tag `v0.4-tier1.1` |
 | 2. Label offsets, orientation and baseline anchoring | done |
 | 3. Export a shear helper | done |
-| 4. Connection z-order | done |
-| 5. Per-connection stroke styling | next |
+| 4. Connection z-order | next |
 
 Everything from Tier 1 item 3 onward is untouched. The palette overhaul is planned but
 deliberately out of scope for the items above.
@@ -99,13 +98,9 @@ sorting. CeTZ 0.4.2 exports `draw.on-layer(layer, body)`, which assigns a `z-ind
 everything a body emits, so wrapping the connection body in `on-layer(-1, ...)` fixes the
 entire class of defects without a depth-sorting rewrite. Default `"front"` preserves v0.3.
 
-*Test:* three layers with one skip from L1 to L3 in `flat` mode routed deliberately through
-L2's body. Render twice, changing only `z`.
-
-Note from implementing it: `on-layer` moves everything the body emits, so the connection's
-label went behind too and washed out against the layer fill. The label is now positioned by
-the routing but emitted outside the layered content, which keeps it readable. Worth checking
-for the same effect in any later feature that puts content on a non-default layer.
+*Test:* three layers with one skip from L1 to L3 in `flat` mode at `pos: 0`, deliberately
+routed straight through L2's body. Render twice, changing only `z`. Expect the line visible
+across L2 with `"front"` and hidden behind it with `"behind"`.
 
 ### 5. Per-connection stroke styling: `stroke`, `dash`, `color`
 
