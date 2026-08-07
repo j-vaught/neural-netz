@@ -1,0 +1,14 @@
+# Typst build artifacts
+*.pdf
+!examples/**/*.pdf
+
+# Regression harness working output (goldens are tracked)
+tests/current/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+.DS_Store
