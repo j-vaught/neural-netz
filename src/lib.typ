@@ -651,11 +651,17 @@ canvas(length: 1cm * scale-factor, {
       let la = calc.max(calc.sqrt(da.at(0) * da.at(0) + da.at(1) * da.at(1)), 0.001)
       let lb = calc.max(calc.sqrt(db.at(0) * db.at(0) + db.at(1) * db.at(1)), 0.001)
       let stub = 0.12
+      // Takes the connection's paint and width, or a styled route gets a stub in
+      // the default colour and weight sitting on top of it. Deliberately solid
+      // even on a dashed route: the stub exists to fill the join, and a dash
+      // pattern this short would leave the notch it is there to hide.
+      let stub-paint = if style == none { colors.connection } else { style.paint }
+      let stub-thickness = if style == none { strokes.connection.thickness } else { style.thickness }
       line(
         (v.at(0) + da.at(0) / la * stub, v.at(1) + da.at(1) / la * stub),
         v,
         (v.at(0) + db.at(0) / lb * stub, v.at(1) + db.at(1) / lb * stub),
-        stroke: (paint: colors.connection, thickness: strokes.connection.thickness, join: "round", cap: "butt"),
+        stroke: (paint: stub-paint, thickness: stub-thickness, join: "round", cap: "butt"),
       )
     }
   }

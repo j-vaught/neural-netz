@@ -27,10 +27,10 @@
 #draw-network(
   range(1, 10).map(layer),
   connections: (
-    (from: "l1", to: "l3", type: "skip", mode: "air", pos: 2.2, label: "default"),
-    (from: "l3", to: "l5", type: "skip", mode: "air", pos: 2.2, label: "dashed", dash: "dashed"),
-    (from: "l5", to: "l7", type: "skip", mode: "air", pos: 2.2, label: "colour", color: garnet),
-    (from: "l7", to: "l9", type: "skip", mode: "air", pos: 2.2, label: "thick + dotted",
+    (from: "l1", to: "l3", type: "skip", pos: 2.2, label: "default"),
+    (from: "l3", to: "l5", type: "skip", pos: 2.2, label: "dashed", dash: "dashed"),
+    (from: "l5", to: "l7", type: "skip", pos: 2.2, label: "colour", color: garnet),
+    (from: "l7", to: "l9", type: "skip", pos: 2.2, label: "thick + dotted",
       color: atlantic, dash: "dotted", thickness: 2),
   ),
 )

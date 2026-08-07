@@ -9,6 +9,8 @@
 // height or they overlap. Picking those by hand means all of them shift as soon
 // as a connection is added.
 //
+// Routes take the default mode, which runs under the main axis.
+//
 // pos: auto places a route clear of the tallest layer and packs routes into the
 // fewest lanes that keep them apart: sort by where a route starts, give it the
 // lowest lane whose previous occupant has already finished.
@@ -24,9 +26,9 @@
 #draw-network(
   range(1, 9).map(layer),
   connections: (
-    (from: "l1", to: "l8", type: "skip", mode: "air", pos: auto),
-    (from: "l2", to: "l4", type: "skip", mode: "air", pos: auto),
-    (from: "l5", to: "l7", type: "skip", mode: "air", pos: auto),
-    (from: "l3", to: "l6", type: "skip", mode: "air", pos: auto),
+    (from: "l1", to: "l8", type: "skip", pos: auto),
+    (from: "l2", to: "l4", type: "skip", pos: auto),
+    (from: "l5", to: "l7", type: "skip", pos: auto),
+    (from: "l3", to: "l6", type: "skip", pos: auto),
   ),
 )
