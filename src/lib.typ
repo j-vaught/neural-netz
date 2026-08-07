@@ -1846,6 +1846,15 @@ canvas(length: 1cm * scale-factor, {
     }
   }
 
+  // Axis arrowheads that a connection attaches to. A route is drawn after the
+  // axis, so its stroke lands across the arrowhead it departs from or arrives
+  // at, showing as a coloured sliver through the head. Redrawing just those
+  // heads afterwards restores them without disturbing the draw order of
+  // anything else, which is what a blanket reorder would cost: the axis lines
+  // are interleaved with the boxes, and that interleaving is what dims them
+  // where they pass behind a layer.
+  let anchored-heads = ()
+
   for (conn-index, conn) in connections.enumerate() {
     let from-name = conn.at("from")
     let to-name = conn.at("to")
@@ -1904,6 +1913,7 @@ canvas(length: 1cm * scale-factor, {
           (base-x + ox/2, base-y + oy/2)
         }
       } else if from-anchor-key in arrow-segments {
+        anchored-heads.push(from-anchor-key)
         let seg = arrow-segments.at(from-anchor-key)
         // Use the arrow's actual start point for x (depth-adjusted)
         (seg.mid.at(0), seg.mid.at(1))
@@ -1948,6 +1958,7 @@ canvas(length: 1cm * scale-factor, {
           (center.at(0), center.at(1) - radius)
         }
       } else if to-anchor-key in arrow-segments {
+        anchored-heads.push(to-anchor-key)
         let seg = arrow-segments.at(to-anchor-key)
         // Use the arrow's midpoint (both x and y)
         seg.mid
@@ -2004,6 +2015,14 @@ canvas(length: 1cm * scale-factor, {
         }
       }
     }
+  }
+
+  for key in anchored-heads.dedup() {
+    let seg = arrow-segments.at(key)
+    let (mx, my) = seg.mid
+    // The axis runs left to right, so a unit span through the midpoint
+    // reproduces the head's position and direction.
+    draw-arrow-icon(mx - 0.5, my, mx + 0.5, my, opacity: 0.7)
   }
   
   if show-legend {

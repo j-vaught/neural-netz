@@ -257,6 +257,37 @@ Do 12 before 11 even though 11 is nominally easier. Auto-sizing rewrites the sam
 default-geometry code that the walker refactor relocates, and the opposite order means
 resolving that conflict twice.
 
+## Tier 4 (continued)
+
+### 14. Junction points, and refusing to draw an impossible junction
+
+Two related changes to how a connection meets the main axis.
+
+First, the visual grammar. A route currently runs straight into the arrowhead it departs from
+or arrives at, so the meeting point is wherever the stroke happens to cross the head. Drawing
+a small filled circle at the junction instead would make the attachment explicit and would
+stop the route and the arrowhead fighting over the same pixels. Item 4's revert and the
+anchored-head redraw are both workarounds for that overlap; a junction marker removes the
+overlap rather than papering over it.
+
+Second, and more valuable, validation. Once junctions are explicit objects with a size, the
+package can check whether the ones a figure asks for actually fit. Six connections meeting
+the axis between the same pair of blocks cannot be drawn legibly however they are ordered,
+and today that silently produces a tangle. It should instead be a diagnosable condition:
+name the pair of layers, say how many junctions were requested, and say how much wider the
+gap has to be. `min-clear-offset` (item 3) already computes the geometry side of that, so the
+required width is derivable rather than guessed.
+
+The interesting design question is what to do when it fails. A hard error stops a document
+build over a cosmetic problem, which is harsh for something that still renders. A warning
+that is easy to miss is close to useless. A third option is to draw it, mark the crowded
+junction visibly, and report, so the figure still compiles but the problem is impossible to
+overlook.
+
+Depends on item 9 for named anchors, since several routes meeting one junction need distinct
+arrival points, and shares machinery with item 10's lane packing, which already computes
+which connections compete for the same span.
+
 ## Deliberate default changes
 
 These intentionally break pixel compatibility with v0.3 and required a full re-baseline.
