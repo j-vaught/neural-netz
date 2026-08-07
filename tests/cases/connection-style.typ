@@ -16,6 +16,9 @@
 //   dash       any Typst dash pattern
 //   thickness  multiplies the palette width, so a figure passing
 //              stroke-thickness to draw-network still scales its connections
+//   legend     names the style, adding a legend entry drawn as a line sample
+//              rather than a colour swatch, since what distinguishes a
+//              connection is its stroke and not a fill
 //
 // Arrowheads take the line colour. A red line with black arrowheads reads as a
 // bug rather than as a choice.
@@ -28,10 +31,12 @@
 #draw-network(
   range(1, 10).map(layer),
   connections: (
-    (from: "l1", to: "l3", type: "skip", pos: 2.2, label: "default"),
-    (from: "l3", to: "l5", type: "skip", pos: 2.2, label: "dashed", dash: "dashed"),
-    (from: "l5", to: "l7", type: "skip", pos: 2.2, label: "colour", color: garnet),
+    (from: "l1", to: "l3", type: "skip", pos: 2.2, label: "default", legend: "plain skip"),
+    (from: "l3", to: "l5", type: "skip", pos: 2.2, label: "dashed", dash: "dashed", legend: "auxiliary"),
+    (from: "l5", to: "l7", type: "skip", pos: 2.2, label: "colour", color: garnet, legend: "residual add"),
     (from: "l7", to: "l9", type: "skip", pos: 2.2, label: "thick + dotted",
-      color: atlantic, dash: "dotted", thickness: 2),
+      color: atlantic, dash: "dotted", thickness: 2, legend: "attention route"),
   ),
+  show-legend: true,
+  legend-title: "Connections",
 )

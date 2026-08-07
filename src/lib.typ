@@ -1917,6 +1917,20 @@ canvas(length: 1cm * scale-factor, {
       dash: conn.at("dash", default: none),
     )
     
+    // A named connection style gets a legend entry drawn as a line sample rather
+    // than a colour swatch, since what distinguishes it is stroke, not fill.
+    let conn-legend = conn.at("legend", default: none)
+    if conn-legend != none {
+      let legend-key = "conn-" + str(conn-legend)
+      if not legend-entries.any(e => e.key == legend-key) {
+        legend-entries.push((
+          key: legend-key, label: conn-legend, kind: "line",
+          color: conn-style.paint, bandfill: conn-style.paint,
+          style: conn-style, show-relu: false, opacity: 1.0,
+        ))
+      }
+    }
+
     if from-name in layer-positions and to-name in layer-positions {
       let from-pos = layer-positions.at(from-name)
       let to-pos = layer-positions.at(to-name)
@@ -2084,6 +2098,12 @@ canvas(length: 1cm * scale-factor, {
     
     legend-y -= 0.6
     
+    // A stroke sample needs more width than a colour swatch, or a dash pattern
+    // has no room to read. Widen the whole sample column when any line entry is
+    // present, so the labels stay on one edge.
+    let has-line = legend-entries.any(e => e.at("kind", default: "box") == "line")
+    let sample-width = if has-line { legend-box-size * 2.4 } else { legend-box-size }
+
     // Render all legend entries in order of appearance
     for entry in legend-entries {
       // An entry may carry an explicit outline; otherwise derive one from its fill.
@@ -2093,7 +2113,16 @@ canvas(length: 1cm * scale-factor, {
       }
       let alpha = 100% - entry.at("opacity", default: 1.0) * 100%
       
-      if entry.at("show-relu", default: false) {
+      if entry.at("kind", default: "box") == "line" {
+        // A sample of the actual stroke, with a head, so dash and weight read at
+        // a glance the way they do in the figure.
+        let mid-y = legend-y + legend-box-size / 2
+        line((legend-x, mid-y), (legend-x + sample-width, mid-y),
+          stroke: (paint: entry.style.paint, thickness: entry.style.thickness,
+                   dash: entry.style.dash, cap: "butt"))
+        draw-arrow-icon(legend-x + sample-width * 0.55, mid-y,
+          legend-x + sample-width * 1.05, mid-y, paint: entry.style.paint)
+      } else if entry.at("show-relu", default: false) {
         // Draw split rectangle: 2/3 fill color (left), 1/3 bandfill color (right)
         let split-x = legend-x + legend-box-size * 2 / 3
         rect((legend-x, legend-y), (split-x, legend-y + legend-box-size),
@@ -2109,7 +2138,7 @@ canvas(length: 1cm * scale-factor, {
           fill: entry.color.transparentize(alpha), stroke: item-stroke.solid)
       }
       
-      content((legend-x + legend-box-size + 0.2, legend-y - 0.013 + legend-box-size / 2), anchor: "west",
+      content((legend-x + sample-width + 0.2, legend-y - 0.013 + legend-box-size / 2), anchor: "west",
         [#text(size: scaled-font(font-sizes.legend-item), entry.label)])
       
       legend-y -= legend-item-height

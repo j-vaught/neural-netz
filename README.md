@@ -201,6 +201,14 @@ Residual adds, concat feeds, attention routes and auxiliary supervision paths ar
 
 `thickness` multiplies rather than replaces, so a figure that passes `stroke-thickness` to `draw-network` still scales its connections. Arrowheads take the line colour, since a coloured line with black arrowheads reads as a bug rather than a choice.
 
+Give a connection a `legend` and it joins the legend as a line sample rather than a colour swatch, since what distinguishes a connection is its stroke and not a fill:
+
+```typ
+(from: "b", to: "d", type: "skip", color: rgb("#73000A"), legend: "residual add")
+```
+
+Connections sharing a `legend` name appear once. The sample column widens when any connection entry is present, so a dash pattern has room to read.
+
 #### Automatic lane heights
 
 `pos` is measured from the centre axis, so a value that clears the blocks has to be worked out from the layer heights and depths, and every route needs its own height or they overlap. Give `pos: auto` instead:

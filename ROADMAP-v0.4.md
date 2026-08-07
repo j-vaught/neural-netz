@@ -138,7 +138,11 @@ Matching the routing isolates styling from layout.
 Depends on 5. The legend currently knows only about layer boxes. Extend `legend-entries` to
 accept line samples alongside colour swatches.
 
-*Test:* the test from 5 plus `show-legend: true` and two named connection styles.
+Entries carry `kind: "line"` and render as a stroke sample with a head rather than a filled
+swatch. The sample column widens whenever a line entry is present: at swatch width a dash
+pattern has no room to show, so a dashed entry looked identical to a solid one.
+
+*Test:* the styling test plus `show-legend: true` and four named connection styles.
 
 ### 7. Group brackets: `groups: ((from: "p1", to: "p5", label: "Backbone"), ...)`
 
