@@ -180,8 +180,21 @@ Depth-scaled models currently fake block repetition by stuffing extra entries in
 which is a visual coincidence rather than semantics. The package cannot label the repeat,
 bracket it, or reflect it in the legend. Draw N ghosted slabs with a `xN` bracket.
 
-*Test:* one layer with `repeat: 3` beside three separate entries at zero offset. The visual
-comparison is itself the design decision.
+Implemented without touching each layer type. The block's drawn width is recovered from how
+far the drawing cursor moved across the type dispatch, so `repeat` works on any block rather
+than only the ones taking `widths`.
+
+The stack claims the width it occupies, advancing both the cursor and `prev-x`. Without that
+the next layer is drawn over the ghosts, and an attached pool, which positions itself from
+the block's right edge, lands on them.
+
+Ignored on `pool`, `unpool` and `sum`. The first two attach to the block before them, so the
+cursor does not describe their own footprint, and repeating a modifier is not meaningful
+anyway.
+
+*Test:* the same architecture faked with three `widths` entries and declared with `repeat: 3`,
+so the comparison is visible. Then counts from 2 to 6 across block types, and the ignored
+case.
 
 ---
 

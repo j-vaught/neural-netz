@@ -247,6 +247,18 @@ Each entry spans from one named layer to another, inclusive, and `from` and `to`
 
 Brackets are placed below everything else in the figure, including any connection routed underneath the stack. Use `offset` on a group to push it further down, which is how you stack a group that encloses other groups onto its own row, and `color` to tint one.
 
+### Repeated blocks
+
+Depth-scaled models often stack the same block several times. Writing that as extra entries in `widths` makes it *look* repeated, but the package has no idea it is: it cannot label the repeat or bracket it, and the figure claims one wide block rather than several. `repeat` declares it:
+
+```typ
+(type: "convres", widths: (0.4,), height: 3, depth: 3, label: "bottleneck", repeat: 3)
+```
+
+The block is drawn once with ghosted copies stacked behind it and an `xN` marker. The stack claims its own width, so the next layer clears it, and `repeat-step` adjusts how far apart the copies sit.
+
+`repeat` is ignored on `pool`, `unpool` and `sum`. The first two attach to the block before them rather than being blocks in their own right, and a sum is a node, not a stack. Repeating the block a pool attaches to still works.
+
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.

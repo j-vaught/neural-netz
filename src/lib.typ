@@ -800,6 +800,10 @@ canvas(length: 1cm * scale-factor, {
       }
     }
     
+    // Where this layer starts, so its drawn width can be recovered afterwards
+    // without every layer type having to report it.
+    let repeat-x0 = x
+
     // CUSTOM LAYER (Universal layer type with full flexibility)
     if l.type == "custom" {
       let h = l.at("height", default: 5)
@@ -1760,6 +1764,46 @@ canvas(length: 1cm * scale-factor, {
       let layer-legend = l.at("legend", default: default-legend-labels.at(l.type))
       if not legend-entries.any(e => e.key == l.type) {
         legend-entries.push((key: l.type, label: layer-legend, color: fill-color, bandfill: fill-color, show-relu: false, opacity: layer-opacity))
+      }
+    }
+
+    // A repeated block, drawn as ghosted copies stacked behind the real one.
+    //
+    // Depth-scaled models fake repetition today by stuffing extra entries into
+    // `widths`, which is a visual coincidence: the package cannot label the
+    // repeat, bracket it, or reflect it anywhere. Declaring it makes the count
+    // part of the figure's meaning rather than of its geometry.
+    //
+    // The width is recovered from how far the drawing cursor moved, so this
+    // works for any layer type without each one having to report its own size.
+    // Pool and unpool attach to the layer before them and a sum is a circle, so
+    // the cursor does not describe their own footprint. Repeating them is not
+    // meaningful anyway: they modify a block rather than being one.
+    let repeat-n = if l.type in ("pool", "unpool", "sum") { 1 } else { l.at("repeat", default: 1) }
+    if repeat-n > 1 {
+      let rw = x - repeat-x0
+      if rw > 0 {
+        let rh = l.at("height", default: 5)
+        let rd = l.at("depth", default: 5)
+        let (rox, roy) = get-depth-offsets(rd)
+        let ry = get-y-offset-for-center-on-axis(rh, rd, arrow-axis-y)
+        let step = l.at("repeat-step", default: 0.16)
+        let ghost = (paint: colors.connection.lighten(55%), thickness: strokes.solid.thickness)
+        // Behind the block, and drawn back to front so the nearest ghost is on
+        // top of the ones further away.
+        on-layer(-1, {
+          for k in range(repeat-n - 1, 0, step: -1) {
+            draw-prism-silhouette(repeat-x0 + k * step, ry + k * step, rw, rh, rox, roy, ghost)
+          }
+        })
+        content((repeat-x0 + rw + rox + (repeat-n - 1) * step + 0.3,
+                 ry + rh + roy + (repeat-n - 1) * step + 0.2),
+          [#text(size: scaled-font(font-sizes.channel-number), weight: "bold", "x" + str(repeat-n))])
+        // Claim the width the stack occupies, or the next layer is drawn on top
+        // of the ghosts. prev-x moves with it so that an attached pool, which
+        // positions itself from the block's right edge, clears the stack too.
+        x += (repeat-n - 1) * step
+        prev-x += (repeat-n - 1) * step
       }
     }
   }
