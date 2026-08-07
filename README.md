@@ -257,7 +257,17 @@ Depth-scaled models often stack the same block several times. Writing that as ex
 
 The block is drawn once with a bracket above it carrying the count. Ghosted copies were tried first and rejected: an outline behind the block reads as an empty box rather than as another one of the same block, and drawing N of them is either misleading about the count or unreadable once N is large. A bracket states the count instead of depicting it, costs no horizontal space, and stays legible at any N.
 
-`repeat` is ignored on `pool`, `unpool` and `sum`. The first two attach to the block before them rather than being blocks in their own right, and a sum is a node, not a stack. Repeating the block a pool attaches to still works.
+`repeat` is ignored on `pool`, `unpool` and `sum`. The first two attach to the block before them rather than being blocks in their own right, and a sum is a node, not a stack.
+
+That makes a stage ending in a pool worth writing carefully. Putting `repeat: 3` on a conv that has a pool attached reads as though the pool repeats too. Split it instead: let two plain convs carry the repeat, and draw the third on its own with the pool attached to it.
+
+```typ
+(type: "conv", widths: (0.4,), height: 3, depth: 3, label: "conv x2", repeat: 2),
+(type: "conv", widths: (0.4,), height: 3, depth: 3, label: "conv + pool", offset: 2.0),
+(type: "pool", height: 2.4, depth: 2.4),
+```
+
+`repeat` describes one layer entry, not a run of them, so a repeated pair such as `(attention, mlp)` cannot be expressed with it.
 
 ### Predefined layer types
 

@@ -1788,12 +1788,9 @@ canvas(length: 1cm * scale-factor, {
         // over the top face is otherwise unused. The count sits above the left
         // end rather than centred, so it reads as an annotation on the bracket
         // rather than as a stray number over the block.
-        // Span the whole drawn footprint, front-left corner to sheared top-right,
-        // the same convention the group brackets use. Spanning only the top face
-        // shifts the bracket right by the shear, which on a block with an
-        // attached pool puts it over the pool instead of over the block it
-        // actually describes.
-        let bx0 = repeat-x0
+        // Spans the top face, so the bracket sits directly over the face it
+        // describes rather than reaching down to the front-left corner.
+        let bx0 = repeat-x0 + rox
         let bx1 = repeat-x0 + rw + rox
         let by = ry + rh + roy + 0.26
         let rule = (paint: colors.connection, thickness: strokes.connection.thickness, cap: "butt", join: "miter")

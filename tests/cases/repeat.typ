@@ -47,10 +47,16 @@
 #v(9mm)
 
 // pool and unpool attach to the block before them rather than being blocks in
-// their own right, so repeat is ignored on them. Repeating the block they attach
-// to is the meaningful thing, and that still works.
+// their own right, so repeat is ignored on them.
+//
+// That makes "three convs then a pool" awkward to say directly: bracketing a
+// repeated conv that has a pool attached reads as though the pool repeats too.
+// Split it instead. Two plain convs carry the repeat, and the third is drawn on
+// its own with the pool attached to it. The bracket then sits over a block with
+// nothing attached, so what it covers is unambiguous.
 #draw-network((
-  (type: "conv", widths: (0.4,), height: 3, depth: 3, label: "conv x3", repeat: 3),
-  (type: "pool", height: 2.4, depth: 2.4, label: "pool, repeat ignored", repeat: 5),
+  (type: "conv", widths: (0.4,), height: 3, depth: 3, label: "conv x2", repeat: 2),
+  (type: "conv", widths: (0.4,), height: 3, depth: 3, label: "conv + pool", offset: 2.0),
+  (type: "pool", height: 2.4, depth: 2.4),
   (type: "conv", widths: (0.4,), height: 2.4, depth: 2.4, label: "conv", offset: 2.2),
 ))

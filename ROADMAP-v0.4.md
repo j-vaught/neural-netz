@@ -192,6 +192,16 @@ and invites reading the ticks as sub-block boundaries. A dashed enclosure says "
 repeats", which is the right reading only if a repeat can span several layers, and that would
 be a different feature.
 
+The bracket spans the block's top face. Spanning the full footprint from the front-left
+corner was tried and looked heavier than the block warrants.
+
+`repeat` describes one layer entry, not a run of them, so a repeated pair such as
+`(conv, pool)` or `(attention, mlp)` cannot be expressed. A stage ending in a pool is written
+by splitting it: two plain blocks carry the repeat and the third is drawn on its own with the
+pool attached, which also keeps the bracket over a block with nothing attached to it. A
+repeat spanning a range of layers would be a separate feature, closer to the group brackets
+than to this one.
+
 Implemented without touching each layer type. The block's drawn width is recovered from how
 far the drawing cursor moved across the type dispatch, so `repeat` works on any block rather
 than only the ones taking `widths`.
