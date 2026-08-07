@@ -14,7 +14,7 @@ dependencies resolved so that a prerequisite always appears before anything that
 |---|---|
 | Step 0. Regression harness | done |
 | 1. Custom layer bandfill default | done, tag `v0.4-tier1.1` |
-| 2. Label offsets | done |
+| 2. Label offsets, angle and baseline anchoring | done |
 | 3. Export a shear helper | next |
 
 Everything from Tier 1 item 3 onward is untouched. The palette overhaul is planned but
@@ -241,6 +241,24 @@ ring an arbitrary maroon.
 `fill`, `stroke` and `symbol` are all per-layer overrides, so the previous filled look
 remains reachable. Legend entries now accept an optional `stroke` for the same reason, since
 a white swatch would otherwise pick up the same derived tint.
+
+### Layer labels are anchored on the baseline
+
+CeTZ measures content from cap-height to baseline and then grows that box by the actual
+glyph bounds (`shapes.typ:1092-1096`). A label containing descenders therefore gets a taller
+box, and centring it lifts the text: measured on a controlled figure, "pppp" sat 3px above
+"nnnn" and "llll" at 200 ppi, roughly 1pt. Labels now use CeTZ's `base` anchor, which pins
+the baseline directly, so alignment no longer depends on which ascenders and descenders a
+string happens to contain.
+
+Side effect: every label sits about 1.8pt closer to its block than in v0.3, uniformly. A
+compensating offset was considered and rejected, since the correction would have to scale
+with both font size and the `scale` argument to stay correct.
+
+Note for future work: a zero-width strut was tried first and does nothing here. `measure()`
+returns a constant height for every string at a given size, so there is no bounding box to
+equalise. Also worth knowing that `import draw: *` (`src/lib.typ:168`) pulls CeTZ's own
+`hide` into scope, shadowing the Typst one.
 
 ## Known issues folded into the above
 

@@ -24,7 +24,7 @@
 
 // Outer labels anchored by their inner edges and pushed outward.
 #draw-network(row(
-  (label-anchor: "east", label-dx: -0.3),
+  (label-anchor: "base-east", label-dx: -0.3),
   (:),
-  (label-anchor: "west", label-dx: 0.3),
+  (label-anchor: "base-west", label-dx: 0.3),
 ))

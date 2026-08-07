@@ -108,13 +108,16 @@ And if you network does not fit the page width of your Typst document, **you can
 
 ### Label placement
 
-Layer labels sit at a fixed spot beneath each block, so long labels on closely spaced layers overlap. Rather than spreading the layers apart to solve a typesetting problem, three per-layer options move the label itself:
+Layer labels sit at a fixed spot beneath each block, so long labels on closely spaced layers overlap. Rather than spreading the layers apart to solve a typesetting problem, four per-layer options move the label itself:
 
 | Option | Default | Effect |
 |---|---|---|
 | `label-dx` | `0` | Shift the label horizontally |
 | `label-dy` | `0` | Shift the label vertically |
-| `label-anchor` | `"center"` | Which edge of the text box is pinned to the label position |
+| `label-angle` | `0deg` | Rotate the label |
+| `label-anchor` | `"base"` | Which point of the text is pinned to the label position |
+
+Labels are anchored on their baseline rather than on their bounding box, so a label containing descenders sits level with one that does not. Use `"base-east"` and `"base-west"` to anchor horizontally while keeping that alignment.
 
 ```typ
 #draw-network((
@@ -124,7 +127,13 @@ Layer labels sit at a fixed spot beneath each block, so long labels on closely s
 ))
 ```
 
-Dropping one label to a second line clears the row. Anchoring the outer labels by their facing edges (`label-anchor: "east"` with a negative `label-dx`, and `"west"` with a positive one) fans them sideways instead.
+Dropping one label to a second line clears the row. Anchoring the outer labels by their facing edges (`label-anchor: "base-east"` with a negative `label-dx`, and `"base-west"` with a positive one) fans them sideways instead.
+
+Past a certain density no amount of shifting helps, because the labels simply do not fit side by side. Rotating them trades horizontal space, which is scarce, for vertical space, which is usually free:
+
+```typ
+(type: "conv", label: "convolution", label-angle: 45deg, label-anchor: "base-east")
+```
 
 ### Adding other connections
 

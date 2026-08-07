@@ -344,8 +344,16 @@ canvas(length: 1cm * scale-factor, {
   let draw-layer-label(l, label, cx, cy, size: none) = {
     if label == none { return }
     let font-size = if size == none { font-sizes.label } else { size }
+    // Anchor on the baseline, not the bounding box. CeTZ measures content from
+    // cap-height to baseline and then grows the box by the actual glyph bounds,
+    // so a label containing descenders gets a taller box and centring it lifts
+    // the text: "projection" would sit ~1pt above "convolution". Anchoring at
+    // "base" pins the baseline instead, so labels align regardless of which
+    // ascenders and descenders a string happens to contain. Use "base-east" and
+    // "base-west" to anchor horizontally while keeping that alignment.
     content((cx + l.at("label-dx", default: 0), cy + l.at("label-dy", default: 0)),
-      anchor: l.at("label-anchor", default: "center"),
+      anchor: l.at("label-anchor", default: "base"),
+      angle: l.at("label-angle", default: 0deg),
       [#text(size: scaled-font(font-size), weight: "bold", label)])
   }
 
