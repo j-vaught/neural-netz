@@ -1776,9 +1776,6 @@ canvas(length: 1cm * scale-factor, {
     //
     // The width is recovered from how far the drawing cursor moved, so this
     // works for any layer type without each one having to report its own size.
-    // Pool and unpool attach to the layer before them and a sum is a circle, so
-    // the cursor does not describe their own footprint. Repeating them is not
-    // meaningful anyway: they modify a block rather than being one.
     let repeat-n = if l.type in ("pool", "unpool", "sum") { 1 } else { l.at("repeat", default: 1) }
     if repeat-n > 1 {
       let rw = x - repeat-x0
@@ -1787,23 +1784,17 @@ canvas(length: 1cm * scale-factor, {
         let rd = l.at("depth", default: 5)
         let (rox, roy) = get-depth-offsets(rd)
         let ry = get-y-offset-for-center-on-axis(rh, rd, arrow-axis-y)
-        let step = l.at("repeat-step", default: 0.16)
-        let ghost = (paint: colors.connection.lighten(55%), thickness: strokes.solid.thickness)
-        // Behind the block, and drawn back to front so the nearest ghost is on
-        // top of the ones further away.
-        on-layer(-1, {
-          for k in range(repeat-n - 1, 0, step: -1) {
-            draw-prism-silhouette(repeat-x0 + k * step, ry + k * step, rw, rh, rox, roy, ghost)
-          }
-        })
-        content((repeat-x0 + rw + rox + (repeat-n - 1) * step + 0.3,
-                 ry + rh + roy + (repeat-n - 1) * step + 0.2),
+        // Above the block: below it collides with the layer label, and the space
+        // over the top face is otherwise unused. The count sits above the left
+        // end rather than centred, so it reads as an annotation on the bracket
+        // rather than as a stray number over the block.
+        let bx0 = repeat-x0 + rox
+        let bx1 = repeat-x0 + rw + rox
+        let by = ry + rh + roy + 0.26
+        let rule = (paint: colors.connection, thickness: strokes.connection.thickness, cap: "butt", join: "miter")
+        line((bx0, by - 0.16), (bx0, by), (bx1, by), (bx1, by - 0.16), stroke: rule)
+        content((bx0, by + 0.12), anchor: "base-west",
           [#text(size: scaled-font(font-sizes.channel-number), weight: "bold", "x" + str(repeat-n))])
-        // Claim the width the stack occupies, or the next layer is drawn on top
-        // of the ghosts. prev-x moves with it so that an attached pool, which
-        // positions itself from the block's right edge, clears the stack too.
-        x += (repeat-n - 1) * step
-        prev-x += (repeat-n - 1) * step
       }
     }
   }

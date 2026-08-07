@@ -255,7 +255,7 @@ Depth-scaled models often stack the same block several times. Writing that as ex
 (type: "convres", widths: (0.4,), height: 3, depth: 3, label: "bottleneck", repeat: 3)
 ```
 
-The block is drawn once with ghosted copies stacked behind it and an `xN` marker. The stack claims its own width, so the next layer clears it, and `repeat-step` adjusts how far apart the copies sit.
+The block is drawn once with a bracket above it carrying the count. Ghosted copies were tried first and rejected: an outline behind the block reads as an empty box rather than as another one of the same block, and drawing N of them is either misleading about the count or unreadable once N is large. A bracket states the count instead of depicting it, costs no horizontal space, and stays legible at any N.
 
 `repeat` is ignored on `pool`, `unpool` and `sum`. The first two attach to the block before them rather than being blocks in their own right, and a sum is a node, not a stack. Repeating the block a pool attaches to still works.
 

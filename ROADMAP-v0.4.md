@@ -180,6 +180,18 @@ Depth-scaled models currently fake block repetition by stuffing extra entries in
 which is a visual coincidence rather than semantics. The package cannot label the repeat,
 bracket it, or reflect it in the legend. Draw N ghosted slabs with a `xN` bracket.
 
+Drawn as a bracket above the block carrying the count, in the same visual vocabulary as the
+group brackets from item 7.
+
+Four depictions were prototyped and rejected before settling on it. Outlined ghost copies
+read as empty boxes rather than as more of the same block, and the up-right offset reads as a
+drop shadow. Filled ghosts are better but cannot take the block's own colour, since the fill
+lives inside each layer type's branch and is not visible where the repeat is drawn. A
+subdivided bracket lets the count be read off the drawing, but stops working past about ten
+and invites reading the ticks as sub-block boundaries. A dashed enclosure says "this region
+repeats", which is the right reading only if a repeat can span several layers, and that would
+be a different feature.
+
 Implemented without touching each layer type. The block's drawn width is recovered from how
 far the drawing cursor moved across the type dispatch, so `repeat` works on any block rather
 than only the ones taking `widths`.
