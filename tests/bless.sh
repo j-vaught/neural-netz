@@ -14,7 +14,7 @@ mkdir -p tests/golden
 if [ "$#" -gt 0 ]; then
   files=("$@")
 else
-  files=(examples/*/*.typ)
+  files=(examples/*/*.typ tests/cases/*.typ)
 fi
 
 for src in "${files[@]}"; do

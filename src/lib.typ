@@ -714,12 +714,28 @@ canvas(length: 1cm * scale-factor, {
       let xlabel = l.at("xlabel", default: none)
       let name = l.at("name", default: none)
       let fill-color = l.at("fill", default: colors.custom)
-      let bandfill-color = l.at("bandfill", default: colors.at("custom-relu"))
+      // When a band is drawn but no bandfill was declared, derive it from the
+      // layer's own fill. The palette's custom-relu is the companion of the
+      // default custom grey, so using it against a user-supplied fill produces
+      // a band unrelated to the layer's color.
+      let bandfill-color = if "bandfill" in l {
+        l.at("bandfill")
+      } else if "fill" in l {
+        fill-color.darken(25%)
+      } else {
+        colors.at("custom-relu")
+      }
       let layer-opacity = l.at("opacity", default: 0.7)
       let channels = l.at("channels", default: none)
       let ylabel-val = l.at("ylabel", default: none)
       let zlabel-val = l.at("zlabel", default: none)
-      let layer-show-relu = l.at("show-relu", default: show-relu)
+      // A custom layer inherits the network-level show-relu only when it has an
+      // activation band to show. An explicit per-layer show-relu still opts in.
+      let layer-show-relu = if "show-relu" in l {
+        l.at("show-relu")
+      } else {
+        show-relu and "bandfill" in l
+      }
       let layer-show-connection = l.at("show-connection", default: true)
       let connection-label = l.at("connection-label", default: none)
       let img = l.at("image", default: none)

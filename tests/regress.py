@@ -27,7 +27,9 @@ CURRENT = ROOT / "tests" / "current"
 
 
 def examples(selectors):
-    found = sorted(ROOT.glob("examples/*/*.typ"))
+    # The bundled gallery guards backward compatibility; tests/cases holds the
+    # small single-variable figures that pin each new v0.4 feature.
+    found = sorted(ROOT.glob("examples/*/*.typ")) + sorted(ROOT.glob("tests/cases/*.typ"))
     if selectors:
         found = [p for p in found if p.stem in selectors]
         missing = set(selectors) - {p.stem for p in found}
