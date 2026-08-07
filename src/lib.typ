@@ -413,7 +413,7 @@ canvas(length: 1cm * scale-factor, {
     }
   }
 
-  let draw-arrow-icon(x1, y1, x2, y2, opacity: 0.7) = {
+  let draw-arrow-icon(x1, y1, x2, y2, opacity: 0.7, paint: none) = {
     let dx = x2 - x1
     let dy = y2 - y1
     let len = calc.sqrt(dx * dx + dy * dy)
@@ -437,26 +437,29 @@ canvas(length: 1cm * scale-factor, {
       let left-pt = (back-mid.at(0) - px * wing, back-mid.at(1) - py * wing)
       let back-tip = (back-mid.at(0) + ux * back * 0.5, back-mid.at(1) + uy * back * 0.5)
 
-      let arrow-color = colors.arrow
+      let arrow-color = if paint == none { colors.arrow } else { paint }
 
       line(tip-pt, right-pt, back-tip, left-pt, close: true,
         fill: arrow-color, stroke: (paint: arrow-color, thickness: strokes.arrow.thickness, join: "round"))
     }
   }
   
-  let draw-segment-with-arrow(x1, y1, x2, y2, opacity: 0.7) = {
-    let paint = colors.connection
-    line((x1, y1), (x2, y2), stroke: (paint: paint, thickness: strokes.connection.thickness, cap: "butt"))
-    draw-arrow-icon(x1, y1, x2, y2, opacity: opacity)
+  let draw-segment-with-arrow(x1, y1, x2, y2, opacity: 0.7, style: none) = {
+    let paint = if style == none { colors.connection } else { style.paint }
+    let thickness = if style == none { strokes.connection.thickness } else { style.thickness }
+    let dash = if style == none { none } else { style.dash }
+    line((x1, y1), (x2, y2),
+      stroke: (paint: paint, thickness: thickness, dash: dash, cap: "butt"))
+    draw-arrow-icon(x1, y1, x2, y2, opacity: opacity, paint: paint)
   }
 
-  let draw-connection-path(segments, opacity: 0.7, layers: none, layer-positions-ref: (:), show-relu: false) = {
+  let draw-connection-path(segments, opacity: 0.7, layers: none, layer-positions-ref: (:), show-relu: false, style: none) = {
     // If there are layers to draw on segment idx==1, we need to split that segment
     if layers != none and layers.len() > 0 {
       // Draw first segment (idx==0) normally
       if segments.len() > 0 {
         let seg = segments.at(0)
-        draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity)
+        draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity, style: style)
       }
       
       // Process segment idx==1 with layers
@@ -515,7 +518,7 @@ canvas(length: 1cm * scale-factor, {
         // Draw connection segments and layers in proper order (interleaved)
         // First arrow: from seg-start to first layer
         if positions.len() > 0 {
-          draw-segment-with-arrow(seg-start.at(0), seg-start.at(1), positions.at(0).west.at(0), positions.at(0).west.at(1), opacity: opacity)
+          draw-segment-with-arrow(seg-start.at(0), seg-start.at(1), positions.at(0).west.at(0), positions.at(0).west.at(1), opacity: opacity, style: style)
         }
         
         // Interleave layers and arrows in propagation order
@@ -618,10 +621,10 @@ canvas(length: 1cm * scale-factor, {
             // Arrow to next layer
             let from-east = positions.at(i).east
             let to-west = positions.at(i + 1).west
-            draw-segment-with-arrow(from-east.at(0), from-east.at(1), to-west.at(0), to-west.at(1), opacity: opacity)
+            draw-segment-with-arrow(from-east.at(0), from-east.at(1), to-west.at(0), to-west.at(1), opacity: opacity, style: style)
           } else {
             // Last layer: arrow to seg-end
-            draw-segment-with-arrow(positions.at(-1).east.at(0), positions.at(-1).east.at(1), seg-end.at(0), seg-end.at(1), opacity: opacity)
+            draw-segment-with-arrow(positions.at(-1).east.at(0), positions.at(-1).east.at(1), seg-end.at(0), seg-end.at(1), opacity: opacity, style: style)
           }
         }
       }
@@ -629,12 +632,12 @@ canvas(length: 1cm * scale-factor, {
       // Draw remaining segments (idx >= 2) normally
       for idx in range(2, segments.len()) {
         let seg = segments.at(idx)
-        draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity)
+        draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity, style: style)
       }
     } else {
       // No layers, draw all segments normally
       for seg in segments {
-        draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity)
+        draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity, style: style)
       }
     }
 
@@ -1800,6 +1803,16 @@ canvas(length: 1cm * scale-factor, {
     let conn-label = conn.at("label", default: none)
     let conn-opacity = conn.at("opacity", default: 0.7)
     let touch-layer = conn.at("touch-layer", default: false)
+    // Per-connection stroke. Residual adds, concat feeds, attention routes and
+    // auxiliary supervision are different things and should look different.
+    // `thickness` multiplies the palette width rather than replacing it, so a
+    // figure passing stroke-thickness to draw-network still scales its
+    // connections. Arrowheads take the line colour.
+    let conn-style = (
+      paint: conn.at("color", default: colors.connection),
+      thickness: strokes.connection.thickness * conn.at("thickness", default: 1),
+      dash: conn.at("dash", default: none),
+    )
     
     if from-name in layer-positions and to-name in layer-positions {
       let from-pos = layer-positions.at(from-name)
@@ -1894,7 +1907,7 @@ canvas(length: 1cm * scale-factor, {
           let waypoint1 = (from-anchor.at(0), down-y)
           let waypoint2 = (to-anchor.at(0), down-y)
           
-          draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu)
+          draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu, style: conn-style)
           
           if conn-label != none {
             content(((waypoint1.at(0) + waypoint2.at(0)) / 2, down-y - 0.3), 
@@ -1914,7 +1927,7 @@ canvas(length: 1cm * scale-factor, {
           }
           let waypoint2 = (waypoint2-x, from-anchor.at(1) - oy)
           
-          draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu)
+          draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu, style: conn-style)
           
           if conn-label != none {
             content(((waypoint1.at(0) + waypoint2.at(0)) / 2, waypoint1.at(1) - 0.3), 
@@ -1926,7 +1939,7 @@ canvas(length: 1cm * scale-factor, {
           let waypoint1 = (from-anchor.at(0), up-y)
           let waypoint2 = (to-anchor.at(0), up-y)
           
-          draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu)
+          draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu, style: conn-style)
           
           if conn-label != none {
             content(((waypoint1.at(0) + waypoint2.at(0)) / 2, up-y + 0.28), 

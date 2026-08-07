@@ -117,13 +117,20 @@ depth-sorting rewrite entirely, and the connection label must be emitted outside
 content, since `on-layer` moves everything a body emits and the label otherwise washes out
 against the layer fill.
 
-### 5. Per-connection stroke styling: `stroke`, `dash`, `color`
+### 5. Per-connection stroke styling: `color`, `dash`, `thickness`
 
 Thread an optional style dict through `draw-segment-with-arrow` (`src/lib.typ:367`).
 Defaults pull from the active palette. Residual adds, concat feeds, attention routes and
 auxiliary supervision paths are semantically different and should be distinguishable.
 
-*Test:* two skips with identical geometry, x-shifted only, one solid and one dashed.
+Shipped as three orthogonal keys rather than the `stroke`/`dash`/`color` mix named here.
+Flat keys match how the rest of the API reads, let a dash be set without restating paint and
+thickness, and avoid reusing `stroke`, which already means a plain colour on the sum node.
+
+`thickness` multiplies the palette width instead of replacing it, so figures passing
+`stroke-thickness` to `draw-network` keep scaling. Arrowheads take the line colour.
+
+*Test:* four skips with identical geometry, shifted along the axis, differing only in style.
 Matching the routing isolates styling from layout.
 
 ### 6. Connection legend entries

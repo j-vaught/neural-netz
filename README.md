@@ -181,6 +181,23 @@ A connection descending between two layers arrives at the midpoint of the arrow 
 
 Note that the default multiplier of `0.3` has no exact binary representation, so `depth-shear(4.5)` is `1.3499999999999999`. Compare with a tolerance if you compare at all.
 
+### Styling connections
+
+Residual adds, concat feeds, attention routes and auxiliary supervision paths are different things, and by default they all look the same. Three per-connection options separate them:
+
+| Option | Default | Effect |
+|---|---|---|
+| `color` | palette | Paint for the line and its arrowheads |
+| `dash` | `none` | Any Typst dash pattern, e.g. `"dashed"`, `"dotted"` |
+| `thickness` | `1` | Multiplies the palette stroke width |
+
+```typ
+(from: "b", to: "d", type: "skip", mode: "air", pos: 1.2,
+ color: rgb("#73000A"), dash: "dashed", thickness: 2)
+```
+
+`thickness` multiplies rather than replaces, so a figure that passes `stroke-thickness` to `draw-network` still scales its connections. Arrowheads take the line colour, since a coloured line with black arrowheads reads as a bug rather than a choice.
+
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.
