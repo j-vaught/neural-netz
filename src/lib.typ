@@ -30,6 +30,7 @@
   scale: 100%,
   stroke-thickness: 1,
   depth-multiplier: 0.3,
+  lane-unit: 0.75,
   show-relu: false,
 ) = {
 
@@ -1814,45 +1815,79 @@ canvas(length: 1cm * scale-factor, {
   // route starts and giving it the lowest lane whose previous occupant has
   // already finished is the usual interval-packing greedy: routes that do not
   // overlap share a lane instead of each claiming a new one.
-  let lane-clearance = 0.7   // from the tallest layer to the first lane
-  let lane-gap = 0.75        // between stacked lanes
+  // Lane height for connections that ask for `pos: auto`.
+  //
+  // Height carries meaning rather than falling out of sort order: a route is
+  // raised one lane-unit for each extra block it reaches over. The shortest
+  // possible skip, one block, sits closest to the stack; a two-block skip is one
+  // unit above it, and so on. Routes of equal reach share a height, so a figure
+  // reads consistently, and a longer route arcs over a shorter one rather than
+  // crossing it.
+  let lane-clearance = 0.7   // from the tallest layer to the shortest route
+  let layer-index = (:)
+  for (i, l) in layers.enumerate() {
+    let n = l.at("name", default: none)
+    if n != none { layer-index.insert(n, i) }
+  }
   let auto-lane = (:)
-  {
-    let spans = ()
-    for (i, conn) in connections.enumerate() {
-      if conn.at("pos", default: 1.25) != auto { continue }
-      let f = conn.at("from")
-      let t = conn.at("to")
-      if f not in layer-positions or t not in layer-positions { continue }
-      let a = layer-positions.at(f)
-      let b = layer-positions.at(t)
-      spans.push((i: i, start: calc.min(a.x, b.x), end: calc.max(a.x + a.w, b.x + b.w)))
-    }
-    spans = spans.sorted(key: sp => sp.start)
+  let entries = ()
+  for (i, conn) in connections.enumerate() {
+    if conn.at("pos", default: 1.25) != auto { continue }
+    let f = conn.at("from")
+    let t = conn.at("to")
+    if f not in layer-index or t not in layer-index { continue }
+    if f not in layer-positions or t not in layer-positions { continue }
+    let a = layer-positions.at(f)
+    let b = layer-positions.at(t)
+    entries.push((
+      i: i,
+      reach: calc.abs(layer-index.at(t) - layer-index.at(f)),
+      start: calc.min(a.x, b.x),
+      end: calc.max(a.x + a.w, b.x + b.w),
+    ))
+  }
+  // Rank by reach rather than using it directly, so that one long route among
+  // short ones does not leave a stack of empty lanes below it.
+  //
+  // Routes of equal reach share a height. Two that overlap would then be drawn
+  // as one line, so the second goes to the opposite side of the axis at the same
+  // height rather than being stacked above the first. Only a third overlapping
+  // route of the same reach needs a new height.
+  let auto-side = (:)
+  let distinct = entries.map(e => e.reach).dedup().sorted()
+  let offset = 0
+  for r in distinct {
+    // Routes of equal reach normally share a height. Two that overlap would
+    // then be drawn as one line, so within a reach they are packed into
+    // sub-lanes by the usual sort-by-start greedy. Equal reach still reads as a
+    // group, and a longer route still sits above a shorter one.
+    let group = entries.filter(e => e.reach == r).sorted(key: e => e.start)
     let lane-ends = ()
-    for sp in spans {
+    for e in group {
       let placed = false
-      for (li, e) in lane-ends.enumerate() {
-        if not placed and sp.start > e {
-          lane-ends.at(li) = sp.end
-          auto-lane.insert(str(sp.i), li)
+      for (li, le) in lane-ends.enumerate() {
+        if not placed and e.start > le {
+          lane-ends.at(li) = e.end
+          auto-lane.insert(str(e.i), offset + int(li / 2))
+          auto-side.insert(str(e.i), if calc.rem(li, 2) == 0 { "air" } else { "flat" })
           placed = true
         }
       }
       if not placed {
-        lane-ends.push(sp.end)
-        auto-lane.insert(str(sp.i), lane-ends.len() - 1)
+        lane-ends.push(e.end)
+        let li = lane-ends.len() - 1
+        auto-lane.insert(str(e.i), offset + int(li / 2))
+        auto-side.insert(str(e.i), if calc.rem(li, 2) == 0 { "air" } else { "flat" })
       }
     }
+    offset += int((lane-ends.len() + 1) / 2)
   }
 
   // Axis arrowheads that a connection attaches to. A route is drawn after the
   // axis, so its stroke lands across the arrowhead it departs from or arrives
   // at, showing as a coloured sliver through the head. Redrawing just those
   // heads afterwards restores them without disturbing the draw order of
-  // anything else, which is what a blanket reorder would cost: the axis lines
-  // are interleaved with the boxes, and that interleaving is what dims them
-  // where they pass behind a layer.
+  // anything else.
   let anchored-heads = ()
 
   for (conn-index, conn) in connections.enumerate() {
@@ -1862,11 +1897,11 @@ canvas(length: 1cm * scale-factor, {
     // Routes run over the top of the stack by default. That is the convention in
     // PlotNeuralNet and in most published diagrams, and it is the house style
     // here. "flat" routes underneath, "depth" along the projection.
-    let conn-mode = conn.at("mode", default: "air")
+    let conn-mode = conn.at("mode", default: auto-side.at(str(conn-index), default: "air"))
     let conn-pos = conn.at("pos", default: 1.25)
     if conn-pos == auto {
       let lane = auto-lane.at(str(conn-index), default: 0)
-      conn-pos = max-half-extent + conn.at("clearance", default: lane-clearance) + lane * lane-gap
+      conn-pos = max-half-extent + conn.at("clearance", default: lane-clearance) + lane * lane-unit
     }
     let conn-label = conn.at("label", default: none)
     let conn-opacity = conn.at("opacity", default: 0.7)

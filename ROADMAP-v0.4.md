@@ -182,14 +182,26 @@ recurring cost rather than crossings. The stated dependency on item 9 did not ho
 needs each connection's x-span, which `layer-positions` already carries, not its arrival
 anchor.
 
-Two parts. A route asking for `auto` is placed clear of the tallest layer in the figure,
-using a reach accumulated during the drawing pass, so the author no longer has to derive a
-clearing height from layer dimensions. Routes are then packed by the usual greedy: sort by
-start, take the lowest lane whose previous occupant has finished.
+A route asking for `auto` is placed clear of the tallest layer in the figure, using a reach
+accumulated during the drawing pass, so the author no longer has to derive a clearing height
+from layer dimensions.
 
-Note that consecutive skips sharing an endpoint layer do land in different lanes. Their
-spans genuinely touch, and the descent of one meets the ascent of the next at the same x, so
-that is correct rather than conservative.
+Height then comes from how far a route reaches, not from packing order. Interval packing was
+tried first and rejected: the greedy hands the lowest lane to whichever route starts first,
+which is usually the longest, so the enclosing route ended up beneath the routes it encloses
+and they had to cross. Ordering by reach means a longer route always arcs over a shorter one,
+and equal reaches share a height, which reads as a group.
+
+Reach is ranked rather than used directly. Literal proportionality was tried and rejected
+too: a seven-block route among two-block ones left four empty lanes and grew the figure by
+about 40% in height for no information gained.
+
+Equal reach with overlapping spans is the one conflict. Those are resolved by sending the
+second route to the opposite side of the axis at the same height, rather than stacking it
+higher, so neither is pushed further out than its reach warrants. Only a third overlapping
+route of the same reach needs a new height.
+
+`lane-unit` on `draw-network` sets the spacing between heights.
 
 Original note follows.
 

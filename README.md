@@ -33,6 +33,7 @@ You can then call `draw-network` which has the following arguments:
   scale: 100%,
   stroke-thickness: 1,
   depth-multiplier: 0.3,
+  lane-unit: 0.75,
   show-relu: false,
 )
 ```
@@ -208,9 +209,11 @@ Residual adds, concat feeds, attention routes and auxiliary supervision paths ar
 (from: "a", to: "h", type: "skip", mode: "air", pos: auto)
 ```
 
-The route is placed clear of the tallest layer in the figure, and routes are packed into the fewest lanes that keep them apart: sorted by where each starts, each takes the lowest lane whose previous occupant has already finished, so routes that do not overlap share a lane. Add a connection and the others reflow rather than needing to be re-tuned.
+The route is placed clear of the tallest layer, and its height comes from how far it reaches: a route spanning more blocks sits higher, so a longer route always arcs over a shorter one instead of crossing it. Reaches are ranked rather than used directly, so one long route among short ones does not leave a stack of empty lanes beneath it.
 
-Set `clearance` on a connection to change how far the first lane sits above the blocks. Numeric `pos` is unaffected and keeps its current meaning.
+Routes of equal reach share a height. Where two of them overlap, the second is routed to the opposite side of the axis at the same height rather than being pushed further out than its reach warrants.
+
+`lane-unit` on `draw-network` sets the spacing between heights, and `clearance` on a connection sets how far the lowest route sits from the blocks. Numeric `pos` is unaffected and keeps its current meaning.
 
 ### Predefined layer types
 
