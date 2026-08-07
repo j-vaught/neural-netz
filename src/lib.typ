@@ -1,5 +1,25 @@
 #import "@preview/cetz:0.4.2": canvas, draw
 
+// How far a layer's top and side faces lean to the right, in canvas units.
+//
+// Layers are drawn in isometric projection: a layer of the given depth shears
+// its far face right by this amount. The number matters when placing a
+// connection, because the *visual* gap between two adjacent layers is not the
+// `offset` between them but `offset - depth-shear(depth)`. A connection routed
+// into what looks like empty space between two layers will cross the previous
+// layer's sheared top face whenever that gap is too narrow.
+//
+// `depth-multiplier` must match the value passed to `draw-network`.
+#let depth-shear(depth, depth-multiplier: 0.3) = depth * depth-multiplier
+
+// The smallest `offset` that leaves a connection room to descend between two
+// adjacent layers without crossing the first one's sheared faces.
+//
+// A connection descending into the gap arrives at the midpoint of the arrow
+// joining the two layers, so it clears the shear only when half the offset
+// exceeds it: offset > 2 * depth-shear(depth).
+#let min-clear-offset(depth, depth-multiplier: 0.3) = 2 * depth-shear(depth, depth-multiplier: depth-multiplier)
+
 // Draw a neural network from layer specifications
 #let draw-network(
   layers,
@@ -108,7 +128,8 @@ let arrow-config = (
 let depth-angle-deg = 45deg //calc.atan(depth-multiplier) * 180 / calc.pi
 
 let get-depth-offsets(d) = {
-  (d * depth-multiplier, d * depth-multiplier)
+  let s = depth-shear(d, depth-multiplier: depth-multiplier)
+  (s, s)
 }
 
 let get-y-offset-for-center-on-axis(h, d, axis-y) = {

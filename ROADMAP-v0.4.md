@@ -15,7 +15,8 @@ dependencies resolved so that a prerequisite always appears before anything that
 | Step 0. Regression harness | done |
 | 1. Custom layer bandfill default | done, tag `v0.4-tier1.1` |
 | 2. Label offsets, orientation and baseline anchoring | done |
-| 3. Export a shear helper | next |
+| 3. Export a shear helper | done |
+| 4. Connection z-order | next |
 
 Everything from Tier 1 item 3 onward is untouched. The palette overhaul is planned but
 deliberately out of scope for the items above.
@@ -79,7 +80,11 @@ clearance formula. This is the root cause of connections that appear to cross la
 a line descending into the apparent gap between two layers actually lands inside the
 previous block's sheared top face whenever the gap is narrower than twice the shear.
 
-*Test:* pure function, so the harness suffices. Assert `depth-shear(4.5) == 1.35`.
+*Test:* the exact assertion suggested here does not hold. `0.3` has no exact binary
+representation, so `depth-shear(4.5)` is `1.3499999999999999`. Compare with a tolerance.
+Rounding inside the library would be worse, since the value feeds coordinates rather than
+being displayed. The test also carries a visual pair, one figure at `offset: depth-shear(6)`
+where the descent crosses the previous layer, one at `min-clear-offset(6)` where it clears.
 
 ---
 

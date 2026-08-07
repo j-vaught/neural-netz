@@ -164,6 +164,23 @@ show-relu: true // visualize relu using darker color on convolution layers
 <img src="gallery/features/connections.png" alt="Adding connections example" width="500"/>
 </p>
 
+### Placing connections around layer depth
+
+Layers are drawn in isometric projection, so a layer's far face leans to the right by `depth * depth-multiplier`. The **visual** gap between two adjacent layers is therefore not the `offset` between them but `offset - depth-shear(depth)`, and a connection routed into what looks like empty space will cross the previous layer's top face when that gap is too narrow.
+
+Two helpers make this computable rather than a matter of trial and error:
+
+```typ
+#import "@preview/neural-netz:0.4.0": draw-network, depth-shear, min-clear-offset
+
+depth-shear(6)        // 1.8  -- how far a depth-6 layer leans right
+min-clear-offset(6)   // 3.6  -- smallest offset that leaves a connection room
+```
+
+A connection descending between two layers arrives at the midpoint of the arrow joining them, so it clears the shear only when half the offset exceeds it. That is what `min-clear-offset` returns. Both take a `depth-multiplier` argument, which must match the one passed to `draw-network`.
+
+Note that the default multiplier of `0.3` has no exact binary representation, so `depth-shear(4.5)` is `1.3499999999999999`. Compare with a tolerance if you compare at all.
+
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.
