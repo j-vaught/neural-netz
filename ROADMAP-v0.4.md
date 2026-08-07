@@ -14,7 +14,7 @@ dependencies resolved so that a prerequisite always appears before anything that
 |---|---|
 | Step 0. Regression harness | done |
 | 1. Custom layer bandfill default | done, tag `v0.4-tier1.1` |
-| 2. Label offsets, angle and baseline anchoring | done |
+| 2. Label offsets, orientation and baseline anchoring | done |
 | 3. Export a shear helper | next |
 
 Everything from Tier 1 item 3 onward is untouched. The palette overhaul is planned but
@@ -257,8 +257,18 @@ with both font size and the `scale` argument to stay correct.
 
 Note for future work: a zero-width strut was tried first and does nothing here. `measure()`
 returns a constant height for every string at a given size, so there is no bounding box to
-equalise. Also worth knowing that `import draw: *` (`src/lib.typ:168`) pulls CeTZ's own
-`hide` into scope, shadowing the Typst one.
+equalise.
+
+Two shadowing traps, both from `import draw: *` (`src/lib.typ:168`), which pulls CeTZ's
+whole draw namespace into scope. CeTZ defines its own `hide` and its own `rotate`, so the
+Typst ones must be reached as `std.hide` and `std.rotate`. Both failed silently rather than
+erroring: the CeTZ `hide` drew the strut visibly, and the CeTZ `rotate` panicked only
+because it happened to reject the `reflow` argument.
+
+Rotated labels go through `std.rotate(..., reflow: true)` rather than CeTZ's `angle:`
+argument on `content()`. `angle:` rotates the text about its anchor, which leaves a vertical
+label roughly half a cap-height off centre from its layer; `reflow` gives the rotated text a
+real bounding box that a normal anchor acts on, so `"north"` centres it by construction.
 
 ## Known issues folded into the above
 

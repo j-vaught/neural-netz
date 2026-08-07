@@ -349,12 +349,47 @@ canvas(length: 1cm * scale-factor, {
     // so a label containing descenders gets a taller box and centring it lifts
     // the text: "projection" would sit ~1pt above "convolution". Anchoring at
     // "base" pins the baseline instead, so labels align regardless of which
-    // ascenders and descenders a string happens to contain. Use "base-east" and
-    // "base-west" to anchor horizontally while keeping that alignment.
-    content((cx + l.at("label-dx", default: 0), cy + l.at("label-dy", default: 0)),
-      anchor: l.at("label-anchor", default: "base"),
-      angle: l.at("label-angle", default: 0deg),
-      [#text(size: scaled-font(font-size), weight: "bold", label)])
+    // ascenders and descenders a string happens to contain.
+    let body = text(size: scaled-font(font-size), weight: "bold", label)
+    let px = cx + l.at("label-dx", default: 0)
+    let py = cy + l.at("label-dy", default: 0)
+
+    let orient = l.at("label-orient", default: none)
+    let angle = l.at("label-angle", default: none)
+    if orient != none and angle != none {
+      panic("Use either label-orient or label-angle, not both. label-orient sets " +
+            "the angle and the matching anchor together; label-angle leaves the " +
+            "anchor to you.")
+    }
+
+    if orient == none {
+      // Raw angle. The caller owns label-anchor, because the correct anchor for
+      // an arbitrary rotation depends on where they want the text to sit.
+      content((px, py), anchor: l.at("label-anchor", default: "base"),
+        angle: if angle == none { 0deg } else { angle }, body)
+    } else {
+      // Preset orientations, each paired with the anchor that places it against
+      // its layer correctly, so the common cases need no manual adjustment.
+      // Rotation goes through std.rotate rather than CeTZ's `angle:` because
+      // reflow gives the rotated text a real bounding box for the anchor to act
+      // on; `angle:` rotates about the anchor and leaves the label off-centre.
+      // std. is required: `import draw: *` shadows both rotate and hide.
+      let presets = (
+        horizontal: (rot: 0deg, anchor: "base"),
+        diagonal: (rot: -45deg, anchor: "north-east"),
+        vertical: (rot: -90deg, anchor: "north"),
+      )
+      if orient not in presets {
+        panic("label-orient must be \"horizontal\", \"diagonal\" or \"vertical\"; got " +
+              repr(orient) + ". For any other angle use label-angle together with " +
+              "your own label-anchor.")
+      }
+      let preset = presets.at(orient)
+      let rotated = if preset.rot == 0deg { body } else {
+        std.rotate(preset.rot, reflow: true, body)
+      }
+      content((px, py), anchor: l.at("label-anchor", default: preset.anchor), rotated)
+    }
   }
 
   let draw-arrow-icon(x1, y1, x2, y2, opacity: 0.7) = {

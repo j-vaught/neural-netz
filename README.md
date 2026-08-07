@@ -112,10 +112,11 @@ Layer labels sit at a fixed spot beneath each block, so long labels on closely s
 
 | Option | Default | Effect |
 |---|---|---|
+| `label-orient` | `"horizontal"` | Orientation preset: `"horizontal"`, `"diagonal"` or `"vertical"` |
 | `label-dx` | `0` | Shift the label horizontally |
 | `label-dy` | `0` | Shift the label vertically |
-| `label-angle` | `0deg` | Rotate the label |
-| `label-anchor` | `"base"` | Which point of the text is pinned to the label position |
+| `label-anchor` | preset | Which point of the text is pinned to the label position |
+| `label-angle` | `0deg` | Escape hatch for an arbitrary angle |
 
 Labels are anchored on their baseline rather than on their bounding box, so a label containing descenders sits level with one that does not. Use `"base-east"` and `"base-west"` to anchor horizontally while keeping that alignment.
 
@@ -132,8 +133,12 @@ Dropping one label to a second line clears the row. Anchoring the outer labels b
 Past a certain density no amount of shifting helps, because the labels simply do not fit side by side. Rotating them trades horizontal space, which is scarce, for vertical space, which is usually free:
 
 ```typ
-(type: "conv", label: "convolution", label-angle: 45deg, label-anchor: "base-east")
+(type: "conv", label: "convolution", label-orient: "diagonal")
 ```
+
+`label-orient` accepts only `"horizontal"`, `"diagonal"` and `"vertical"`. Each preset pairs its angle with the anchor that places it correctly, so a diagonal label points its end at its own layer and a vertical label hangs centred beneath it, with no manual adjustment. Any other value is an error.
+
+For an angle outside those three, use `label-angle` and pick `label-anchor` yourself, since the right anchor for an arbitrary rotation depends on where you want the text to sit. Setting both `label-orient` and `label-angle` is an error.
 
 ### Adding other connections
 
