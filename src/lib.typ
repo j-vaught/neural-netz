@@ -1800,6 +1800,12 @@ canvas(length: 1cm * scale-factor, {
     let conn-label = conn.at("label", default: none)
     let conn-opacity = conn.at("opacity", default: 0.7)
     let touch-layer = conn.at("touch-layer", default: false)
+    // Connections are drawn after every layer box, so a route paints over
+    // whatever it crosses. "behind" puts it on a lower z-layer instead.
+    let conn-z = conn.at("z", default: "front")
+    if conn-z not in ("front", "behind") {
+      panic("connection z must be \"front\" or \"behind\"; got " + repr(conn-z))
+    }
     
     if from-name in layer-positions and to-name in layer-positions {
       let from-pos = layer-positions.at(from-name)
@@ -1888,7 +1894,12 @@ canvas(length: 1cm * scale-factor, {
       
       if conn-type == "skip" {
         let conn-layers = conn.at("layers", default: none)
-        
+
+        // The label is positioned by the routing but emitted outside `routed`,
+        // so that sending a route behind the layers does not also wash out its
+        // annotation.
+        let label-at = none
+        let routed = {
         if conn-mode == "flat" {
           let down-y = from-anchor.at(1) - conn-pos
           let waypoint1 = (from-anchor.at(0), down-y)
@@ -1897,8 +1908,7 @@ canvas(length: 1cm * scale-factor, {
           draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu)
           
           if conn-label != none {
-            content(((waypoint1.at(0) + waypoint2.at(0)) / 2, down-y - 0.3), 
-              [#text(size: scaled-font(font-sizes.layer-label), conn-label)])
+            label-at = ((waypoint1.at(0) + waypoint2.at(0)) / 2, down-y - 0.3)
           }
         } else if conn-mode == "depth" {
           let (ox, oy) = get-depth-offsets(conn-pos * 2.5)
@@ -1917,8 +1927,7 @@ canvas(length: 1cm * scale-factor, {
           draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu)
           
           if conn-label != none {
-            content(((waypoint1.at(0) + waypoint2.at(0)) / 2, waypoint1.at(1) - 0.3), 
-              [#text(size: scaled-font(font-sizes.layer-label), conn-label)])
+            label-at = ((waypoint1.at(0) + waypoint2.at(0)) / 2, waypoint1.at(1) - 0.3)
           }
         } else if conn-mode == "air" {
           let up-y = arrow-axis-y + conn-pos
@@ -1929,9 +1938,16 @@ canvas(length: 1cm * scale-factor, {
           draw-connection-path(((from-anchor, waypoint1), (waypoint1, waypoint2), (waypoint2, to-anchor)), opacity: conn-opacity, layers: conn-layers, layer-positions-ref: layer-positions, show-relu: show-relu)
           
           if conn-label != none {
-            content(((waypoint1.at(0) + waypoint2.at(0)) / 2, up-y + 0.28), 
-              [#text(size: scaled-font(font-sizes.layer-label), conn-label)])
+            label-at = ((waypoint1.at(0) + waypoint2.at(0)) / 2, up-y + 0.28)
           }
+        }
+        }
+
+        // on-layer assigns a z-index to everything the body emits, so the whole
+        // route including its label drops behind the layer boxes at once.
+        if conn-z == "behind" { on-layer(-1, routed) } else { routed }
+        if label-at != none {
+          content(label-at, [#text(size: scaled-font(font-sizes.layer-label), conn-label)])
         }
       }
     }
