@@ -291,8 +291,6 @@ By default a connection arrives on the main axis just before its target. `touch-
 
 Each anchor carries the edge it sits on, and the offset moves along that edge, so an offset route still lands on the block. That matters most for `"nw"` and `"sw"`: the west side's top and bottom edges run along the isometric depth direction, not horizontally, so shifting in x alone would walk the arrival off the block entirely.
 
-A route arriving at a named anchor puts its arrowhead at the arrival point rather than halfway along the last segment, so where it lands is visible. Elsewhere arrowheads stay mid-segment as before.
-
 Several routes can then fan into one layer, which is what a concat needs. `touch-layer` is unchanged and still available.
 
 ### Predefined layer types
