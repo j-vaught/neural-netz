@@ -90,7 +90,7 @@ where the descent crosses the previous layer, one at `min-clear-offset(6)` where
 
 ## Tier 2. Easy, self-contained
 
-### 4. Connection z-order: `z: "behind" | "front"`
+### 4. Connection z-order: `z: "behind" | "front"` -- implemented, then reverted
 
 All user connections are drawn in a final pass after every layer box (`src/lib.typ:1712`),
 so a skip route is unconditionally painted on top of anything it crosses. There is no depth
@@ -98,9 +98,24 @@ sorting. CeTZ 0.4.2 exports `draw.on-layer(layer, body)`, which assigns a `z-ind
 everything a body emits, so wrapping the connection body in `on-layer(-1, ...)` fixes the
 entire class of defects without a depth-sorting rewrite. Default `"front"` preserves v0.3.
 
-*Test:* three layers with one skip from L1 to L3 in `flat` mode at `pos: 0`, deliberately
-routed straight through L2's body. Render twice, changing only `z`. Expect the line visible
-across L2 with `"front"` and hidden behind it with `"behind"`.
+**Do not rebuild this without asking.** It was implemented in `f7d0e2e` and reverted in
+`8e0d7b3` by preference, not because it failed. Routing over the top of the stack is the
+house style here, as it is in PlotNeuralNet and in the bundled U-Net example, so a route
+passing behind a block is not wanted even when it is drawn correctly. The revert is the
+decision, not a rollback of a broken feature.
+
+Consequences for the rest of the plan. Crossings are not the pain point; lanes are. Every
+connection routed over the top needs its own height, those numbers are picked by eye, and
+they all shift when a connection is added. That makes item 10, `pos: auto`, the highest
+value item left rather than a mid-tier one. Its stated dependency on item 9 is softer than
+written: lane packing needs each connection's x-span, which is already known, so a first
+version can ship before named anchors exist.
+
+If it is ever revived, the working implementation is in `f7d0e2e`. Two things it got right
+that a reimplementation would have to repeat: CeTZ's `on-layer(-1, body)` avoids a
+depth-sorting rewrite entirely, and the connection label must be emitted outside the layered
+content, since `on-layer` moves everything a body emits and the label otherwise washes out
+against the layer fill.
 
 ### 5. Per-connection stroke styling: `stroke`, `dash`, `color`
 
