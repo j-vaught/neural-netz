@@ -140,7 +140,17 @@ accept line samples alongside colour swatches.
 
 Entries carry `kind: "line"` and render as a stroke sample with a head rather than a filled
 swatch. The sample column widens whenever a line entry is present: at swatch width a dash
-pattern has no room to show, so a dashed entry looked identical to a solid one.
+pattern has no room to show, so a dashed entry looked identical to a solid one. Layer
+swatches widen with the column, or they float away from their labels, which only became
+obvious on a legend with several layer types.
+
+The sample line stops at the back plane of its arrowhead rather than running to the tip. The
+head is concave behind its widest point, so a line ending further forward shows its end cap
+inside that notch, most visibly on a thick stroke.
+
+`main-legend` on `draw-network` names the automatic axis arrows. It defaults to `none`, so
+existing figures are unchanged, but a legend that explains every skip and omits the forward
+pass is arguably incomplete: worth considering as a default.
 
 *Test:* the styling test plus `show-legend: true` and four named connection styles.
 

@@ -39,4 +39,5 @@
   ),
   show-legend: true,
   legend-title: "Connections",
+  main-legend: "forward pass",
 )

@@ -27,6 +27,7 @@
   palette: "warm",
   show-legend: false,
   legend-title: "Layers",
+  main-legend: none,
   scale: 100%,
   stroke-thickness: 1,
   depth-multiplier: 0.3,
@@ -1890,6 +1891,18 @@ canvas(length: 1cm * scale-factor, {
   // anything else.
   let anchored-heads = ()
 
+  // The main axis flow gets a legend entry of its own when named. Without it a
+  // legend can explain every skip in a figure and say nothing about the arrows
+  // carrying the actual forward pass.
+  if main-legend != none {
+    legend-entries.push((
+      key: "main-flow", label: main-legend, kind: "line",
+      color: colors.connection, bandfill: colors.connection,
+      style: (paint: colors.connection, thickness: strokes.connection.thickness, dash: none),
+      show-relu: false, opacity: 1.0,
+    ))
+  }
+
   for (conn-index, conn) in connections.enumerate() {
     let from-name = conn.at("from")
     let to-name = conn.at("to")
@@ -2117,24 +2130,31 @@ canvas(length: 1cm * scale-factor, {
         // A sample of the actual stroke, with a head, so dash and weight read at
         // a glance the way they do in the figure.
         let mid-y = legend-y + legend-box-size / 2
-        line((legend-x, mid-y), (legend-x + sample-width, mid-y),
+        // Stop the line at the back plane of the head rather than running it to
+        // the tip. The head is concave behind its widest point, so a line ending
+        // any further forward shows its end cap inside that notch, which is most
+        // obvious on a thick stroke. Ending at the barbs puts the line end under
+        // the widest part of the head, where it is covered.
+        let head-size = arrow-config.triangle-size
+        let head-center = legend-x + sample-width - head-size * 0.9
+        line((legend-x, mid-y), (head-center - head-size * 0.9, mid-y),
           stroke: (paint: entry.style.paint, thickness: entry.style.thickness,
                    dash: entry.style.dash, cap: "butt"))
-        draw-arrow-icon(legend-x + sample-width * 0.55, mid-y,
-          legend-x + sample-width * 1.05, mid-y, paint: entry.style.paint)
+        draw-arrow-icon(head-center - 0.5, mid-y, head-center + 0.5, mid-y,
+          paint: entry.style.paint)
       } else if entry.at("show-relu", default: false) {
         // Draw split rectangle: 2/3 fill color (left), 1/3 bandfill color (right)
-        let split-x = legend-x + legend-box-size * 2 / 3
+        let split-x = legend-x + sample-width * 2 / 3
         rect((legend-x, legend-y), (split-x, legend-y + legend-box-size),
           fill: entry.color.transparentize(alpha), stroke: none)
-        rect((split-x, legend-y), (legend-x + legend-box-size, legend-y + legend-box-size),
+        rect((split-x, legend-y), (legend-x + sample-width, legend-y + legend-box-size),
           fill: entry.bandfill.transparentize(alpha), stroke: none)
         // Draw outline
-        rect((legend-x, legend-y), (legend-x + legend-box-size, legend-y + legend-box-size),
+        rect((legend-x, legend-y), (legend-x + sample-width, legend-y + legend-box-size),
           fill: none, stroke: item-stroke.solid)
       } else {
         // Draw solid rectangle
-        rect((legend-x, legend-y), (legend-x + legend-box-size, legend-y + legend-box-size),
+        rect((legend-x, legend-y), (legend-x + sample-width, legend-y + legend-box-size),
           fill: entry.color.transparentize(alpha), stroke: item-stroke.solid)
       }
       

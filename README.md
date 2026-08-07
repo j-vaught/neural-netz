@@ -30,6 +30,7 @@ You can then call `draw-network` which has the following arguments:
   palette: "warm",
   show-legend: false,
   legend-title: "Layers",
+  main-legend: none,
   scale: 100%,
   stroke-thickness: 1,
   depth-multiplier: 0.3,
@@ -207,7 +208,13 @@ Give a connection a `legend` and it joins the legend as a line sample rather tha
 (from: "b", to: "d", type: "skip", color: rgb("#73000A"), legend: "residual add")
 ```
 
-Connections sharing a `legend` name appear once. The sample column widens when any connection entry is present, so a dash pattern has room to read.
+Connections sharing a `legend` name appear once. The sample column widens when any connection entry is present, so a dash pattern has room to read, and layer swatches widen with it so nothing floats away from its label.
+
+The automatic axis arrows can be named too, with `main-legend` on `draw-network`. Without it a legend can explain every skip in a figure and say nothing about the arrows carrying the forward pass:
+
+```typ
+#draw-network(layers, connections: (...), show-legend: true, main-legend: "forward pass")
+```
 
 #### Automatic lane heights
 
