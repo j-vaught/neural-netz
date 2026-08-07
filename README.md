@@ -142,6 +142,8 @@ For an angle outside those three, use `label-angle` and pick `label-anchor` your
 
 ### Adding other connections
 
+Extra connections route over the top of the stack by default. Pass `mode: "flat"` to route underneath, or `mode: "depth"` to run along the projection.
+
 The main axis connections are drawn automatically, except for the input layer. You can overwrite that by using the boolean `show-connection` to tell if the connection **after** a layer should be drawn or not. You can also draw extra connections using the `connections` argument of `draw-network`. In order to make reference to a layer, it will need a `name`:
 
 ```typ

@@ -9,7 +9,7 @@
 // height or they overlap. Picking those by hand means all of them shift as soon
 // as a connection is added.
 //
-// Routes take the default mode, which runs under the main axis.
+// Routes take the default mode, which runs over the top of the stack.
 //
 // pos: auto places a route clear of the tallest layer and packs routes into the
 // fewest lanes that keep them apart: sort by where a route starts, give it the

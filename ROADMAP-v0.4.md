@@ -344,6 +344,19 @@ argument on `content()`. `angle:` rotates the text about its anchor, which leave
 label roughly half a cap-height off centre from its layer; `reflow` gives the rotated text a
 real bounding box that a normal anchor acts on, so `"north"` centres it by construction.
 
+### Connections route over the top by default
+
+`mode` defaulted to `"flat"`, which routes a connection underneath the stack. It now defaults
+to `"air"`, over the top, which is the convention in PlotNeuralNet and in most published
+diagrams and is the house style here.
+
+No bundled example relied on the default; every one of them names its mode explicitly, so
+only the two connection test cases changed.
+
+Note that this is separate from draw order, which is what the anchored-head redraw addresses.
+Where a route runs is one question; which of the route and the arrowhead is painted second is
+another.
+
 ## Known issues folded into the above
 
 `mode: "depth"` on a connection routes the line backwards through the layer stack, which

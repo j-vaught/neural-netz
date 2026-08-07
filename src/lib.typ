@@ -1859,7 +1859,10 @@ canvas(length: 1cm * scale-factor, {
     let from-name = conn.at("from")
     let to-name = conn.at("to")
     let conn-type = conn.at("type", default: "skip")
-    let conn-mode = conn.at("mode", default: "flat")
+    // Routes run over the top of the stack by default. That is the convention in
+    // PlotNeuralNet and in most published diagrams, and it is the house style
+    // here. "flat" routes underneath, "depth" along the projection.
+    let conn-mode = conn.at("mode", default: "air")
     let conn-pos = conn.at("pos", default: 1.25)
     if conn-pos == auto {
       let lane = auto-lane.at(str(conn-index), default: 0)

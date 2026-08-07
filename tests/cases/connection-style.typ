@@ -8,7 +8,8 @@
 // shifted along the axis. Matching the routing is what isolates styling from
 // layout, so any difference you see is the style and nothing else.
 //
-// pos is fixed rather than auto here, precisely so the geometry stays identical.
+// Mode is left at the default, which routes over the top. pos is fixed rather
+// than auto here, precisely so the geometry stays identical.
 // Automatic lanes are exercised in connection-auto-lane.typ.
 //
 //   color      paint for the line and its arrowheads
