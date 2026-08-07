@@ -2137,7 +2137,7 @@ canvas(length: 1cm * scale-factor, {
         // the widest part of the head, where it is covered.
         let head-size = arrow-config.triangle-size
         let head-center = legend-x + sample-width - head-size * 0.9
-        line((legend-x, mid-y), (head-center - head-size * 0.9, mid-y),
+        line((legend-x, mid-y), (head-center - head-size * 0.75, mid-y),
           stroke: (paint: entry.style.paint, thickness: entry.style.thickness,
                    dash: entry.style.dash, cap: "butt"))
         draw-arrow-icon(head-center - 0.5, mid-y, head-center + 0.5, mid-y,

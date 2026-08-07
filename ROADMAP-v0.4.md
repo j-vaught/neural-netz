@@ -144,9 +144,11 @@ pattern has no room to show, so a dashed entry looked identical to a solid one. 
 swatches widen with the column, or they float away from their labels, which only became
 obvious on a legend with several layer types.
 
-The sample line stops at the back plane of its arrowhead rather than running to the tip. The
-head is concave behind its widest point, so a line ending further forward shows its end cap
-inside that notch, most visibly on a thick stroke.
+The sample line stops short of its arrowhead rather than running to the tip. The head is
+concave behind its widest point, so a line ending further forward shows its end cap inside
+that notch, most visibly on a thick stroke. The line ends `0.75 * triangle-size` behind the
+head centre, chosen by eye against the 2x-thickness case: `0.9` sits exactly at the barbs and
+covers most, but reads as a slightly loose join at normal weights.
 
 `main-legend` on `draw-network` names the automatic axis arrows. It defaults to `none`, so
 existing figures are unchanged, but a legend that explains every skip and omits the forward
