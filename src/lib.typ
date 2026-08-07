@@ -25,7 +25,8 @@ let colors-warm = (
   gap: rgb("#FF69B4"),
   fc: rgb("#B39DDB"),
   fc-relu: rgb("#9575CD"),
-  sum: rgb("#70cf9b"),
+  sum: rgb("#FFFFFF"),
+  sum-stroke: rgb("#000000"),
   convres: rgb("#e681a8"),
   convres-relu: rgb("#ad507e"),
   convsoftmax: rgb("#6A0066"),
@@ -33,8 +34,8 @@ let colors-warm = (
   output: rgb("#6A0066"),
   custom: rgb("#dad9d7"),
   custom-relu: rgb("#a8a7a4"),
-  arrow: rgb("#0f4d52"),
-  connection: rgb("#0f4d52"),
+  arrow: rgb("#000000"),
+  connection: rgb("#000000"),
 )
 
 // Cold palette
@@ -49,7 +50,8 @@ let colors-cold = (
   gap: rgb("#E91E63"),
   fc: rgb("#9FA8DA"),
   fc-relu: rgb("#7986CB"),
-  sum: rgb("#70cf9b"),
+  sum: rgb("#FFFFFF"),
+  sum-stroke: rgb("#000000"),
   convres: rgb("#8edbd5"),
   convres-relu: rgb("#54adac"),
   convsoftmax: rgb("#4A148C"),
@@ -57,8 +59,8 @@ let colors-cold = (
   output: rgb("#4A148C"),
   custom: rgb("#d7d9da"),
   custom-relu: rgb("#a1a4ad"),
-  arrow: rgb("#0f4d52"),
-  connection: rgb("#0f4d52"),
+  arrow: rgb("#000000"),
+  connection: rgb("#000000"),
 )
 
 let strokes = (
@@ -1512,23 +1514,23 @@ canvas(length: 1cm * scale-factor, {
       let center-x = x + radius + prev-depth-offset / 2
       let center-y = arrow-axis-y
 
-      let dyn-stroke = dynamic-color-strokes(fill-color)
-      dyn-stroke.solid.paint = dyn-stroke.solid.paint.darken(10%) // slightly darker stroke than for other layers
-      dyn-stroke.solid.thickness = dyn-stroke.solid.thickness * 1.5  // slightly thicker stroke than for other layers
+      // The sum node is an operator, not a data block, so it is drawn flat with
+      // an explicit outline rather than the gradient-shaded fill used elsewhere.
+      // The outline is taken from the palette instead of being derived from the
+      // fill: deriving it pushes saturation on a near-neutral fill, which turns
+      // a white node's ring an arbitrary hue.
+      let stroke-color = l.at("stroke", default: colors.sum-stroke)
+      let sum-stroke = (paint: stroke-color, thickness: strokes.solid.thickness * 1.5)
       fill-color = fill-color.transparentize((1-layer-opacity)*100%)
 
       circle((center-x, center-y), radius: radius,
-        fill: gradient.radial(
-          fill-color.lighten(50%), fill-color, fill-color.darken(30%),
-          center: (50%, 50%), radius: 50%,
-          focal-center: (35%, 35%), focal-radius: 5%
-        ),
-        stroke: dyn-stroke.solid)
-      
+        fill: fill-color,
+        stroke: sum-stroke)
+
       if symbol != none {
         let symbole-size = scaled-font(font-sizes.label * 2.5)
-        content((center-x, center-y), 
-          [#v(-0.185 * symbole-size)#text(size: symbole-size, weight: "bold", fill: dyn-stroke.solid.paint, symbol)])
+        content((center-x, center-y),
+          [#v(-0.185 * symbole-size)#text(size: symbole-size, weight: "bold", fill: stroke-color, symbol)])
       }
       
       // Display channels labels (below and optionally on diagonal)
@@ -1563,7 +1565,7 @@ canvas(length: 1cm * scale-factor, {
       // Register legend entry
       let layer-legend = l.at("legend", default: default-legend-labels.at("sum"))
       if not legend-entries.any(e => e.key == "sum") {
-        legend-entries.push((key: "sum", label: layer-legend, color: fill-color, bandfill: fill-color, show-relu: false, opacity: layer-opacity))
+        legend-entries.push((key: "sum", label: layer-legend, color: fill-color, bandfill: fill-color, show-relu: false, opacity: layer-opacity, stroke: stroke-color))
       }
     }
     
@@ -1894,7 +1896,11 @@ canvas(length: 1cm * scale-factor, {
     
     // Render all legend entries in order of appearance
     for entry in legend-entries {
+      // An entry may carry an explicit outline; otherwise derive one from its fill.
       let item-stroke = dynamic-color-strokes(entry.color)
+      if entry.at("stroke", default: none) != none {
+        item-stroke.solid.paint = entry.stroke
+      }
       let alpha = 100% - entry.at("opacity", default: 1.0) * 100%
       
       if entry.at("show-relu", default: false) {

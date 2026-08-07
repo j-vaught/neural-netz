@@ -202,6 +202,34 @@ Do 12 before 11 even though 11 is nominally easier. Auto-sizing rewrites the sam
 default-geometry code that the walker refactor relocates, and the opposite order means
 resolving that conflict twice.
 
+## Deliberate default changes
+
+These intentionally break pixel compatibility with v0.3 and required a full re-baseline.
+They are listed separately from the feature tiers because the governing rule above does not
+apply to them: the whole point is that the default look changes.
+
+### Arrows and connections are black
+
+`arrow` and `connection` were `#0f4d52` in both palettes, a dark teal. Both are now
+`#000000`. This affects every figure, though in most of them only as a thin band along the
+axis.
+
+### The sum node is a flat white disc with a black outline
+
+It was a green disc filled with a radial gradient, the only object in the library rendered
+with gradient shading, which read as a glossy bead against otherwise flat isometric slabs.
+It is now drawn flat, white, with an explicit black ring and symbol, which is the
+convention used in the ResNet paper and in PlotNeuralNet.
+
+The outline is taken from a new palette entry `sum-stroke` rather than derived from the
+fill. Deriving it applies `darken(50%).saturate(80%)` (`src/lib.typ:73`), and pushing
+saturation on a near-neutral fill amplifies incidental hue, which turned a white node's
+ring an arbitrary maroon.
+
+`fill`, `stroke` and `symbol` are all per-layer overrides, so the previous filled look
+remains reachable. Legend entries now accept an optional `stroke` for the same reason, since
+a white swatch would otherwise pick up the same derived tint.
+
 ## Known issues folded into the above
 
 `mode: "depth"` on a connection routes the line backwards through the layer stack, which
