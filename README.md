@@ -373,7 +373,7 @@ A branch may be **open at one end**. `open: "start"` draws no fan-out, so the br
 ))
 ```
 
-The bundled `YOLO26n-early/mid/late-fusion` examples use the open start for their two-sensor inputs.
+The bundled RGB-IR fusion examples use the open start for their two-sensor inputs. They cover the fusion depths — `YOLO26n-early-fusion` (pixel level), `YOLO26n-mid-fusion` (halfway, one concat at P3), `YOLO26n-multiscale-fusion` (one fusion per pyramid level), `YOLO26n-gated-fusion` (a weighted sum arbitrated by an illumination subnetwork) and `YOLO26n-late-fusion` (two complete detectors meeting only at Weighted Box Fusion) — and `fusion-operators` opens up the fusion block itself, since "mid fusion" names a position rather than an operator.
 
 The rejoin waits for the longest branch rather than cutting the others short. Named layers inside a branch join the same table the trunk uses, so connections, groups and `pos: auto` lane ranking all reach into branches, and a group naming any layer inside a branch widens to the branch's whole drawn extent, plumbing included. A branch may contain branches.
 
