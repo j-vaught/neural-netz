@@ -283,6 +283,18 @@ By default a connection arrives on the main axis just before its target. `touch-
 
 Several routes can then fan into one layer, which is what a concat needs. The offset runs along the edge rather than in x: the top and bottom edges of a block's west side follow the isometric depth direction, so shifting horizontally would walk the arrival off the block.
 
+`arrive-offset: auto` spaces a whole fan without picking numbers:
+
+```typ
+(from: "a", to: "cat", touch-layer: true, pos: auto, arrive-offset: auto),
+(from: "b", to: "cat", touch-layer: true, pos: auto, arrive-offset: auto),
+(from: "c", to: "cat", touch-layer: true, pos: auto, arrive-offset: auto),
+```
+
+Routes are grouped by the edge they land on, which is the target layer plus the routing mode, then spread across it. `k` routes divide the edge into `k + 1` intervals and sit at the interior boundaries, so the outermost pair is inset rather than sitting on the corners, and they are ordered by where each route starts so a fan does not cross itself. Add a route and the rest respace.
+
+The edge is `sqrt(2) * depth * depth-multiplier` for top and bottom arrivals and the layer height for left ones, so a deeper block accommodates a wider fan.
+
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.

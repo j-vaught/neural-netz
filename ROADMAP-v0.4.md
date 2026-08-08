@@ -241,8 +241,18 @@ Arrival is still the only side handled. Departure stays the arrow-segment midpoi
 `touch-layer` edge, since the stacking problem is fan-in: several routes converging on one
 concat, not several leaving one block.
 
-*Test:* three routes into one concat with no offsets, showing the stacked arrowheads, then
-the same three offset apart, then the bottom and left edges.
+`arrive-offset: auto` spaces a fan automatically, the same shape of problem as item 10's lane
+packing: group by the edge a route lands on, then spread across it. `k` routes divide the edge
+into `k + 1` intervals and sit at the interior boundaries, inset rather than on the corners,
+ordered by where each route starts so the fan does not cross itself.
+
+This also produces the capacity number item 14 needs. The arrival edge is
+`sqrt(2) * depth * depth-multiplier` for top and bottom arrivals and the layer height for
+left ones, so how many routes a layer can accept is computable rather than a matter of
+eyeballing a tangle.
+
+*Test:* three routes hand-spaced, the same three on auto for comparison, and five on auto to
+show a fan respacing rather than needing every offset re-picked.
 
 ### 10. `pos: auto` lane assignment -- done, ahead of its tier
 

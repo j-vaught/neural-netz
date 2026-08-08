@@ -1922,6 +1922,45 @@ canvas(length: 1cm * scale-factor, {
     offset += int((lane-ends.len() + 1) / 2)
   }
 
+  // Even spacing for connections asking for `arrive-offset: auto`.
+  //
+  // Routes are grouped by the edge they land on, which is the target layer plus
+  // the routing mode, then spread across that edge. k routes divide it into
+  // k + 1 intervals and sit at the interior boundaries, so the outermost pair is
+  // inset by one gap rather than sitting on the corners. Adding a route respaces
+  // the rest instead of needing every offset re-picked by hand.
+  //
+  // Sorted by where each route starts, so a fan-in does not cross itself.
+  let auto-arrive = (:)
+  {
+    let groups = (:)
+    for (i, conn) in connections.enumerate() {
+      if conn.at("arrive-offset", default: 0) != auto { continue }
+      if not conn.at("touch-layer", default: false) { continue }
+      let f = conn.at("from")
+      let t = conn.at("to")
+      if f not in layer-positions or t not in layer-positions { continue }
+      let key = t + "/" + conn.at("mode", default: "air")
+      let entry = (i: i, x: layer-positions.at(f).x)
+      groups.insert(key, groups.at(key, default: ()) + (entry,))
+    }
+    for (key, members) in groups {
+      let t = key.split("/").at(0)
+      let mode = key.split("/").at(1)
+      let tp = layer-positions.at(t)
+      // The arrival edge: the west side's top and bottom edges run along the
+      // isometric depth direction, the left edge along the layer's height.
+      let edge = if mode == "depth" { tp.h } else {
+        calc.sqrt(tp.ox * tp.ox + tp.oy * tp.oy)
+      }
+      let ordered = members.sorted(key: m => m.x)
+      let k = ordered.len()
+      for (j, m) in ordered.enumerate() {
+        auto-arrive.insert(str(m.i), edge * ((j + 1) / (k + 1) - 0.5))
+      }
+    }
+  }
+
   // Axis arrowheads that a connection attaches to. A route is drawn after the
   // axis, so its stroke lands across the arrowhead it departs from or arrives
   // at, showing as a coloured sliver through the head. Redrawing just those
@@ -2037,7 +2076,10 @@ canvas(length: 1cm * scale-factor, {
       // without inventing a second vocabulary for something the mode already
       // says. The offset runs along the edge rather than in x, because the top
       // and bottom edges of the west side follow the isometric depth direction.
-      let arrive-off = conn.at("arrive-offset", default: 0)
+      let arrive-off-raw = conn.at("arrive-offset", default: 0)
+      let arrive-off = if arrive-off-raw == auto {
+        auto-arrive.at(str(conn-index), default: 0)
+      } else { arrive-off-raw }
       let to-anchor = if touch-layer {
         // Special case: arrive at specific edge of west side of destination layer
         let base-x = to-pos.x
