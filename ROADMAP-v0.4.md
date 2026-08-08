@@ -237,6 +237,19 @@ Terminating arrowheads were also tried, drawing the head at the arrival point ra
 mid-segment, and reverted. Mid-segment heads are the convention throughout the package and
 the inconsistency was not wanted.
 
+A route arriving on the bottom or left edge has its final stretch drawn behind the layer.
+Those edges are on the far side of the block, so the route passes underneath it before
+reaching them, and drawing that stretch on top made it read as running across the front face.
+The layers are already semi-transparent, so it ghosts rather than vanishing, with no extra
+shading logic. Scoped to the final segment of a non-air `touch-layer` arrival, so it is not
+the general route-behind-blocks behaviour that item 4 was reverted for.
+
+Depth arrivals needed no feature at all. Several routes converging on one point and looping
+in is simply what happens when none of them sets an offset, and ordering by reach falls out
+of `pos: auto`. Fanning along the left edge was prototyped and rejected: that face recedes, so
+a fan there sweeps across the figure, whereas the top and bottom edges run parallel to the
+lanes and fan cleanly. A junction marker at the convergence was also prototyped and rejected.
+
 Arrival is still the only side handled. Departure stays the arrow-segment midpoint or the
 `touch-layer` edge, since the stacking problem is fan-in: several routes converging on one
 concat, not several leaving one block.

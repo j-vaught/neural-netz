@@ -283,6 +283,8 @@ By default a connection arrives on the main axis just before its target. `touch-
 
 Several routes can then fan into one layer, which is what a concat needs. The offset runs along the edge rather than in x: the top and bottom edges of a block's west side follow the isometric depth direction, so shifting horizontally would walk the arrival off the block.
 
+A route arriving on the bottom or left edge has its final stretch drawn behind the layer. Those edges are on the far side of the block, so the route genuinely passes underneath it before reaching them; drawing that stretch on top makes it look like the line runs across the front face. Since layers are semi-transparent it shows faintly rather than disappearing. Arrivals on the top edge are unaffected, as nothing overlaps them.
+
 `arrive-offset: auto` spaces a whole fan without picking numbers:
 
 ```typ
