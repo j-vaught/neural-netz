@@ -77,9 +77,9 @@
   // its level's resolution makes the P3 one tower over the figure.
   (type: "branch", spread: 7, lead: 3.0, rejoin-lead: 4.6, spread-mode: "depth", branches: (
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P3", channels: (256, 80),
-      fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "hp3", label-orient: "horizontal", label-dx: -0.8),),
+      fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "hp3", label-orient: "horizontal"),),
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P4", channels: (256, 40),
-      fill: head-color, opacity: 0.9, show-relu: false, name: "hp4", label-orient: "horizontal", label-dx: -0.8),),
+      fill: head-color, opacity: 0.9, show-relu: false, name: "hp4", label-orient: "horizontal"),),
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P5", channels: (256, 20),
       fill: head-color, opacity: 0.9, show-relu: false, name: "hp5", label-orient: "horizontal"),),
   )),
