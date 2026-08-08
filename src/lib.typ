@@ -742,6 +742,8 @@ canvas(length: 1cm * scale-factor, {
           // The turn has to clear the preceding block's sheared face, not just
           // its front edge, or the vertical run is drawn across it.
           let turn-out = calc.max(x + lead / 2, prev-x + prev-depth-offset + 0.15)
+          let branch-from-x = prev-x + prev-depth-offset
+          let branch-from-y = prev-center-y
           let branch-start = turn-out + lead / 2
           let ends = ()
 
@@ -749,7 +751,6 @@ canvas(length: 1cm * scale-factor, {
             // Centred on the trunk, first branch highest.
             let dy = if n <= 1 { 0 } else { spread * ((n - 1) / 2 - bi) / (n - 1) }
             let r = walk-trunk(sub, branch-start, arrow-axis-y + dy)
-            r.body
 
             for (k, v) in r.positions { layer-positions.insert(k, v) }
             for (k, v) in r.segments { arrow-segments.insert(k, v) }
@@ -764,18 +765,24 @@ canvas(length: 1cm * scale-factor, {
             // axis, across to the branch's height, then in. A diagonal would be
             // the only slanted line in a figure that is otherwise all right
             // angles.
+            // Anchored like the axis arrows: leaving from the previous block's
+            // perspective centre rather than from the axis itself, which is only
+            // the same point for a layer of zero depth.
             let by = arrow-axis-y + dy
             let turn = turn-out
             if dy == 0 {
-              draw-connection-path((((x, arrow-axis-y), (branch-start, by)),), opacity: 0.7)
+              draw-connection-path((((branch-from-x, branch-from-y), (branch-start, by)),), opacity: 0.7)
             } else {
               draw-connection-path((
-                ((x, arrow-axis-y), (turn, arrow-axis-y)),
-                ((turn, arrow-axis-y), (turn, by)),
+                ((branch-from-x, branch-from-y), (turn, branch-from-y)),
+                ((turn, branch-from-y), (turn, by)),
                 ((turn, by), (branch-start, by)),
               ), opacity: 0.7)
             }
-            ends.push((x: r.prev-x + r.prev-depth-offset, y: by, dy: dy, end: r.end-x))
+            // Drawn after the route, so the blocks cover it the way a layer
+            // covers the arrow arriving at it.
+            r.body
+            ends.push((x: r.prev-x + r.prev-depth-offset, y: r.prev-center-y, dy: dy, end: r.end-x))
           }
 
           // Rejoin where the longest branch finishes, so none is cut short.
@@ -793,6 +800,8 @@ canvas(length: 1cm * scale-factor, {
                 ((turn, arrow-axis-y), (resume, arrow-axis-y)),
               ), opacity: 0.7)
             }
+            // Left on the axis for the next layer to draw its own arrow into,
+            // as any other layer would.
           }
 
           x = resume
@@ -1979,6 +1988,7 @@ canvas(length: 1cm * scale-factor, {
       max-half-extent: max-half-extent,
       prev-x: prev-x,
       prev-depth-offset: prev-depth-offset,
+      prev-center-y: prev-center-y,
       end-x: x,
     )
   }
