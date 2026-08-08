@@ -308,6 +308,21 @@ disjoint. Confirm the disjoint pair reuses a lane.
 
 ### 11. `shape: (channels, h, w)` auto-sizing
 
+The mapping stated here, log-scaled channels to width and **linear** spatial extent to height
+and depth, is wrong on the second half. Linear puts a 20-square block a quarter of a unit tall
+against 8 for a 640-square input. Both axes are logarithmic. Fitted against the pyramid in the
+YOLO example, tuned by eye earlier in this work, `1.2 * log2(spatial) - 3.2` reproduces its
+heights to within 0.4 units and `0.075 * log2(channels)` its widths to within 0.05, which is
+independent confirmation that a log mapping is what one converges on by hand.
+
+Constants are absolute rather than normalised across a figure, so the same shape gives the
+same size everywhere and two figures in one document stay comparable. Normalising was
+considered and rejected: it would resize every block whenever a layer is added, which is
+tolerable for invisible scaffolding like lanes and jarring for the blocks themselves.
+
+Shape supplies defaults, not values, applied field by field, which is what keeps manual
+control. Absent `shape` the code path never runs.
+
 Highest backward-compatibility risk on the list, because it wants to touch the default
 height and depth logic at `src/lib.typ:614-618`. Contain the risk by making `shape` a
 strictly separate code path, so that absent `shape` nothing changes. Requires a documented
@@ -315,9 +330,10 @@ mapping, log-scaled channels to width and linear spatial extent to height and de
 configurable constants. Today nothing prevents drawing a 20-square block taller than an
 80-square one.
 
-*Test:* two blocks, one written as `shape: (256, 40, 40)` and one hand-sized to the values
-the mapping should produce, rendered identically. Then a four-level pyramid to confirm the
-scaling reads correctly across an order of magnitude.
+*Test:* two blocks, one written as `shape: (256, 40, 40)` and one hand-sized, verified
+pixel-identical. The hand-sized one has to spell out the mapping rather than round it:
+writing 3.186 for 3.18631... shifts the edges by a fraction of a pixel and shows in a diff.
+Then a 640-to-20 pyramid, the per-field overrides, and a non-square pair.
 
 ---
 

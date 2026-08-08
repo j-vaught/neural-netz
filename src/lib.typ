@@ -33,6 +33,7 @@
   stroke-thickness: 1,
   depth-multiplier: 0.3,
   lane-unit: 0.75,
+  shape-scale: (spatial: (1.2, -3.2), channels: (0.075, 0.0)),
   show-relu: false,
 ) = {
 
@@ -710,6 +711,44 @@ canvas(length: 1cm * scale-factor, {
     used-layer-types.insert(l.type, true)
     
     // Ensure height and depth are set for arrow calculation (using type-specific defaults)
+    // A layer may state its tensor shape as (channels, height, width) and have
+    // its geometry derived from it, rather than being sized by eye.
+    //
+    // Both axes are logarithmic. Linear spatial extent is unusable: against the
+    // pyramid in the YOLO example, a 20-square block comes out a quarter of a
+    // unit tall against 8 for the 640-square input, which is invisible. The log
+    // mapping reproduces that hand-tuned pyramid to within 0.4 units, and the
+    // channel mapping its widths to within 0.05.
+    //
+    // Shape supplies defaults, not values. Anything stated explicitly wins,
+    // field by field, so a layer can take its width and depth from its shape
+    // while its height is forced. Absent `shape` none of this runs.
+    let shp = l.at("shape", default: none)
+    if shp != none {
+      if shp.len() != 3 {
+        panic("shape must be (channels, height, width); got " + repr(shp))
+      }
+      let (shp-c, shp-h, shp-w) = shp
+      // Floored: the mapping goes negative for very small extents, and a layer
+      // still has to be visible.
+      let from-spatial(v) = calc.max(
+        shape-scale.spatial.at(0) * calc.log(calc.max(v, 1), base: 2) + shape-scale.spatial.at(1), 0.4)
+      let from-channels(v) = calc.max(
+        shape-scale.channels.at(0) * calc.log(calc.max(v, 1), base: 2) + shape-scale.channels.at(1), 0.15)
+
+      if not l.keys().contains("height") { l.insert("height", from-spatial(shp-h)) }
+      if not l.keys().contains("depth") { l.insert("depth", from-spatial(shp-w)) }
+      // Only the types whose thickness means channel count take a derived width.
+      // The rest have a fixed thickness that says something else.
+      if not l.keys().contains("widths") and not l.keys().contains("width") {
+        if l.type == "conv" or l.type == "convres" {
+          l.insert("widths", (from-channels(shp-c),))
+        } else if l.type == "custom" {
+          l.insert("width", from-channels(shp-c))
+        }
+      }
+    }
+
     if not l.keys().contains("height") {
       let default-h = if l.type == "pool" or l.type == "unpool" { 4 } else if l.type == "concat" or l.type == "fc" or l.type == "softmax" or l.type == "output" { 3 } else if l.type == "gap" { 1.5 } else if l.type == "convsoftmax" { 4 } else { 5 }
       l.insert("height", default-h)

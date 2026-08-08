@@ -36,6 +36,7 @@ You can then call `draw-network` which has the following arguments:
   stroke-thickness: 1,
   depth-multiplier: 0.3,
   lane-unit: 0.75,
+  shape-scale: (spatial: (1.2, -3.2), channels: (0.075, 0.0)),
   show-relu: false,
 )
 ```
@@ -296,6 +297,34 @@ A route arriving on the bottom or left edge has its final stretch drawn behind t
 Routes are grouped by the edge they land on, which is the target layer plus the routing mode, then spread across it. `k` routes divide the edge into `k + 1` intervals and sit at the interior boundaries, so the outermost pair is inset rather than sitting on the corners, and they are ordered by where each route starts so a fan does not cross itself. Add a route and the rest respace.
 
 The edge is `sqrt(2) * depth * depth-multiplier` for top and bottom arrivals and the layer height for left ones, so a deeper block accommodates a wider fan.
+
+### Sizing layers from tensor shapes
+
+A layer can state its shape as `(channels, height, width)` and have its geometry derived rather than sized by eye:
+
+```typ
+(type: "conv", shape: (256, 40, 40))
+```
+
+Both axes are logarithmic:
+
+```
+height, depth = 1.2 * log2(spatial) - 3.2
+width         = 0.075 * log2(channels)
+```
+
+Linear spatial extent does not work. Across a 640-to-20 pyramid it puts the smallest block at a quarter of a unit against 8 for the input, which is invisible. The log mapping reproduces the hand-tuned pyramid in the bundled YOLO example to within 0.4 units.
+
+`shape` supplies **defaults, not values**. Anything stated explicitly wins, field by field, so a layer can take its width and depth from its shape while its height is forced:
+
+```typ
+(type: "conv", shape: (256, 40, 40))              // all three derived
+(type: "conv", shape: (256, 40, 40), height: 5)   // height forced, the rest derived
+```
+
+The constants are absolute rather than normalised across a figure, so the same shape gives the same size everywhere and two figures stay comparable. Change them with `shape-scale` on `draw-network`, which takes `(spatial: (slope, intercept), channels: (slope, intercept))` applied to the base-2 logarithm. Derived sizes are floored so a very small extent still draws.
+
+Only `conv`, `convres` and `custom` take a derived width, since their thickness means channel count. Other types have a fixed thickness that says something else, and keep it.
 
 ### Predefined layer types
 
