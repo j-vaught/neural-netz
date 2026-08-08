@@ -358,7 +358,7 @@ Set the white space with `auto-gap` on `draw-network`.
 ))
 ```
 
-Each branch is a layer list of its own, walked at its own offset and rejoined afterwards. `spread` sets the separation, centred on the trunk with the first branch furthest out, and `lead` how far the fan-out and rejoin arrows run. An odd count puts one branch on the trunk line; an even count leaves it empty.
+Each branch is a layer list of its own, walked at its own offset and rejoined afterwards. `spread` sets the separation, centred on the trunk with the first branch furthest out, and `lead` how far the fan-out and rejoin arrows run; `rejoin-lead` widens the rejoin side alone, which depth mode often wants since its return spine descends past each block's lower-right corner, where the diagonal dimension labels sit. An odd count puts one branch on the trunk line; an even count leaves it empty.
 
 `spread-mode: "depth"` stacks the branches along the projection's 45-degree axis instead, away and near, so they read as parallel copies sitting behind one another. The fan-out and rejoin become two parallel spines with horizontal teeth, a parallelogram.
 

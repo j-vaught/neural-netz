@@ -75,7 +75,7 @@
   // trunk line, P3 away, P5 near. Sized alike rather than from shape, since a
   // head is a module reading a level, not a feature map, and letting each take
   // its level's resolution makes the P3 one tower over the figure.
-  (type: "branch", spread: 7, lead: 3.0, spread-mode: "depth", branches: (
+  (type: "branch", spread: 7, lead: 3.0, rejoin-lead: 6.0, spread-mode: "depth", branches: (
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P3", channels: (256, 80),
       fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "hp3", label-orient: "horizontal", label-dx: -0.8),),
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P4", channels: (256, 40),

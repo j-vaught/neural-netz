@@ -742,6 +742,10 @@ canvas(length: 1cm * scale-factor, {
           let subs = l.at("branches", default: ())
           let spread = l.at("spread", default: 6)
           let lead = l.at("lead", default: 2.0)
+          // The rejoin side can need more room than the fan-out: in depth mode
+          // the return spine descends past each block's lower-right corner,
+          // which is where the diagonal dimension labels sit.
+          let rejoin-lead = l.at("rejoin-lead", default: lead)
           let n = subs.len()
           // "depth" stacks the branches along the projection's own axis rather
           // than straight up: the front branch stays on the trunk line and the
@@ -864,12 +868,12 @@ canvas(length: 1cm * scale-factor, {
           // Rejoin where the longest branch finishes, so none is cut short.
           // Measured from the sheared right edge of each branch's last block, so
           // the rejoin turns clear of them too.
-          let rturn0 = ends.map(e => e.x + e.shear - e.at("dx", default: 0)).fold(branch-start, calc.max) + lead / 2
+          let rturn0 = ends.map(e => e.x + e.shear - e.at("dx", default: 0)).fold(branch-start, calc.max) + rejoin-lead / 2
           let rcross = rturn0 + spread / 2
           let resume = if depth-spread {
-            rcross + lead / 2
+            rcross + rejoin-lead / 2
           } else {
-            ends.map(e => e.x + e.shear).fold(x, calc.max) + lead
+            ends.map(e => e.x + e.shear).fold(x, calc.max) + rejoin-lead
           }
           if depth-spread {
             // The incoming spine mirrors the outgoing one: exits run onto it
@@ -897,7 +901,7 @@ canvas(length: 1cm * scale-factor, {
             }
           } else {
             for e in ends {
-              let turn = resume - lead / 2
+              let turn = resume - rejoin-lead / 2
               let out-x = if n <= 1 { resume } else { turn }
               if e.last-name != none and e.last-name + "-out" not in arrow-segments {
                 let mid = ((e.x + out-x) / 2, e.y)
@@ -920,7 +924,7 @@ canvas(length: 1cm * scale-factor, {
             }
           }
 
-          let dot-x = if n <= 1 { resume } else if depth-spread { rcross } else { resume - lead / 2 }
+          let dot-x = if n <= 1 { resume } else if depth-spread { rcross } else { resume - rejoin-lead / 2 }
           // The arrow into the next block leaves from the merge dot, but the
           // drawing extends past it: in depth mode the away rows and their spine
           // reach spread/2 further right. The cursor advances past all of it so
