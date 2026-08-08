@@ -24,6 +24,7 @@ echo ""
 # Create output directories if they don't exist
 mkdir -p "$OUTPUT_DIR/features"
 mkdir -p "$OUTPUT_DIR/networks"
+mkdir -p "$OUTPUT_DIR/imported"
 
 # Export features examples
 echo -e "${GREEN}Exporting features examples...${NC}"
@@ -41,6 +42,16 @@ for file in examples/networks/*.typ; do
     if [ -f "$file" ]; then
         filename=$(basename "$file" .typ)
         typst compile "$file" "$OUTPUT_DIR/networks/$filename.png" --ppi "$DPI" --root "."
+        echo "✓ Exported $filename.typ"
+    fi
+done
+
+# Export imported-model examples
+echo -e "${GREEN}Exporting imported examples...${NC}"
+for file in examples/imported/*.typ; do
+    if [ -f "$file" ]; then
+        filename=$(basename "$file" .typ)
+        typst compile "$file" "$OUTPUT_DIR/imported/$filename.png" --ppi "$DPI" --root "."
         echo "✓ Exported $filename.typ"
     fi
 done

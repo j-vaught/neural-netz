@@ -1,0 +1,238 @@
+{
+ "meta": {
+  "source": "torchvision:vgg16",
+  "input": [
+   3,
+   224,
+   224
+  ],
+  "params": 138357544,
+  "layers": 14
+ },
+ "layers": [
+  {
+   "name": "input",
+   "path": "input",
+   "op": "Input",
+   "type": "input",
+   "shape": [
+    3,
+    224,
+    224
+   ],
+   "params": 0,
+   "group": "input",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "features_0",
+   "path": "features.0",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    64,
+    224,
+    224
+   ],
+   "params": 1792,
+   "group": "features",
+   "relu": true,
+   "folded": [
+    "ReLU"
+   ],
+   "repeat": 2
+  },
+  {
+   "name": "features_4",
+   "path": "features.4",
+   "op": "MaxPool2d",
+   "type": "pool",
+   "shape": [
+    64,
+    112,
+    112
+   ],
+   "params": 0,
+   "group": "features",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "features_5",
+   "path": "features.5",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    128,
+    112,
+    112
+   ],
+   "params": 73856,
+   "group": "features",
+   "relu": true,
+   "folded": [
+    "ReLU"
+   ],
+   "repeat": 2
+  },
+  {
+   "name": "features_9",
+   "path": "features.9",
+   "op": "MaxPool2d",
+   "type": "pool",
+   "shape": [
+    128,
+    56,
+    56
+   ],
+   "params": 0,
+   "group": "features",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "features_10",
+   "path": "features.10",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    256,
+    56,
+    56
+   ],
+   "params": 295168,
+   "group": "features",
+   "relu": true,
+   "folded": [
+    "ReLU"
+   ],
+   "repeat": 3
+  },
+  {
+   "name": "features_16",
+   "path": "features.16",
+   "op": "MaxPool2d",
+   "type": "pool",
+   "shape": [
+    256,
+    28,
+    28
+   ],
+   "params": 0,
+   "group": "features",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "features_17",
+   "path": "features.17",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    512,
+    28,
+    28
+   ],
+   "params": 1180160,
+   "group": "features",
+   "relu": true,
+   "folded": [
+    "ReLU"
+   ],
+   "repeat": 3
+  },
+  {
+   "name": "features_23",
+   "path": "features.23",
+   "op": "MaxPool2d",
+   "type": "pool",
+   "shape": [
+    512,
+    14,
+    14
+   ],
+   "params": 0,
+   "group": "features",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "features_24",
+   "path": "features.24",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    512,
+    14,
+    14
+   ],
+   "params": 2359808,
+   "group": "features",
+   "relu": true,
+   "folded": [
+    "ReLU"
+   ],
+   "repeat": 3
+  },
+  {
+   "name": "features_30",
+   "path": "features.30",
+   "op": "MaxPool2d",
+   "type": "pool",
+   "shape": [
+    512,
+    7,
+    7
+   ],
+   "params": 0,
+   "group": "features",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "avgpool",
+   "path": "avgpool",
+   "op": "AdaptiveAvgPool2d",
+   "type": "pool",
+   "shape": [
+    512,
+    7,
+    7
+   ],
+   "params": 0,
+   "group": "avgpool",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "classifier_0",
+   "path": "classifier.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    4096
+   ],
+   "params": 102764544,
+   "group": "classifier",
+   "relu": true,
+   "folded": [
+    "ReLU"
+   ],
+   "repeat": 2
+  },
+  {
+   "name": "classifier_6",
+   "path": "classifier.6",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    1000
+   ],
+   "params": 4097000,
+   "group": "classifier",
+   "relu": false,
+   "folded": []
+  }
+ ]
+}

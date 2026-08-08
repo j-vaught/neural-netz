@@ -1,5 +1,9 @@
 #import "@preview/cetz:0.4.2": canvas, draw
 
+// Option tables, validation and the layer constructors. Re-exported, so
+// `#import "@preview/neural-netz:0.4.0": draw-network, conv, pool` reaches them.
+#import "schema.typ": *
+
 // How far a layer's top and side faces lean to the right, in canvas units.
 //
 // Layers are drawn in isometric projection: a layer of the given depth shears
@@ -20,6 +24,118 @@
 // exceeds it: offset > 2 * depth-shear(depth).
 #let min-clear-offset(depth, depth-multiplier: 0.3) = 2 * depth-shear(depth, depth-multiplier: depth-multiplier)
 
+// Turn an imported model dump into a layer list.
+//
+// `tools/import_model.py` traces a model and writes one record per layer:
+// its type, its name, and the shape of what it produces. That is everything
+// `draw-network` needs, because every block's geometry is already derived from
+// its shape and every gap from `offset: auto`. So the figure is the model, not
+// a hand-made copy of it that drifts the moment someone changes a channel count.
+//
+//   #from-shapes(json("resnet18.json"))
+//
+// The result is an ordinary layer list. Anything a hand-authored figure can do
+// to a layer can be done here too, either to all of them through `defaults` or
+// to one of them by name through `overrides`, so the import is a starting point
+// rather than a wall.
+//
+// `label` picks what each block is called:
+//   "leaf"  the last component of the module path      (conv1, fc)
+//   "path"  the full dotted path                       (layer3.0.conv1)
+//   "op"    the module's class                         (Conv2d)
+//   "shape" channels and resolution                    (256x14)
+//   none    nothing; let the groups do the naming
+#let from-shapes(
+  data,
+  label: "leaf",
+  defaults: (:),
+  by-op: (:),
+  overrides: (:),
+  drop: (),
+) = {
+  data.at("layers", default: ()).filter(r => r.at("name") not in drop).map(r => {
+    let shape = r.at("shape", default: none)
+    let text-of(kind) = {
+      if kind == none { none }
+      else if kind == "op" { r.at("op", default: "") }
+      else if kind == "path" { r.at("path", default: r.name) }
+      else if kind == "shape" and shape != none and shape.len() == 3 {
+        str(shape.at(0)) + "×" + str(shape.at(1))
+      } else if kind == "shape" and shape != none { str(shape.at(0)) }
+      else if kind == "shape" { none }
+      else {
+        // A leaf named by its index inside a Sequential says nothing on its own,
+        // so it keeps the container that indexes it: `features.0` rather than
+        // `0`, `downsample.0` rather than another `0`.
+        let parts = r.at("path", default: r.name).split(".")
+        let last = parts.last()
+        if parts.len() > 1 and last.matches(regex("^[0-9]+$")).len() > 0 {
+          parts.at(parts.len() - 2) + "." + last
+        } else { last }
+      }
+    }
+
+    let l = (
+      type: r.at("type"),
+      name: r.at("name"),
+      offset: auto,
+    )
+    let lbl = text-of(label)
+    if lbl != none and lbl != "" { l.insert("label", lbl) }
+
+    // A feature map carries its full shape, so the block is sized from it. A
+    // vector has no resolution to draw, so it keeps its default proportions and
+    // only reports its width.
+    if shape != none and shape.len() == 3 {
+      l.insert("shape", (shape.at(0), shape.at(1), shape.at(2)))
+      l.insert("channels", (shape.at(0), shape.at(1)))
+    } else if shape != none and shape.len() == 1 {
+      l.insert("channels", (shape.at(0),))
+    }
+
+    // Set either way rather than only when true, so the trace beats the figure's
+    // `show-relu` default. Whether a block is followed by an activation is
+    // something the import actually observed, and a whole-figure default would
+    // otherwise paint a band on attention blocks that have no activation at all.
+    // Only the types that draw a band can be told; a traced ReLU after a linear
+    // layer is real but has nowhere to go.
+    if l.type in ("conv", "convres", "custom") {
+      l.insert("show-relu", r.at("relu", default: false))
+    }
+    let n = r.at("repeat", default: 1)
+    if n > 1 { l.insert("repeat", n) }
+
+    // Author-supplied fields win, narrowest last: every layer, then every layer
+    // running a given operator, then one named layer. `by-op` is what separates
+    // things the importer had to map onto the same type — an attention block and
+    // a linear projection are both `fc` to the library and nothing alike to a
+    // reader — without naming each of the twelve blocks that need it.
+    for (k, v) in defaults { l.insert(k, v) }
+    for (k, v) in by-op.at(r.at("op", default: ""), default: (:)) { l.insert(k, v) }
+    for (k, v) in overrides.at(r.at("name"), default: (:)) { l.insert(k, v) }
+    l
+  })
+}
+
+// Stage brackets from the same dump, one per run of layers sharing a group.
+//
+// The importer's `--group-depth` decides how coarse a stage is: at depth 1 a
+// torchvision ResNet reports conv1, maxpool, layer1 through layer4 and fc,
+// which is the bracketing anyone would have drawn by hand.
+#let groups-from-shapes(data, skip: ("input",), drop: (), ..rest) = {
+  let runs = ()
+  for r in data.at("layers", default: ()) {
+    let g = r.at("group", default: "")
+    if g in skip or g == "" or r.at("name") in drop { continue }
+    if runs.len() > 0 and runs.last().label == g {
+      runs.last().to = r.at("name")
+    } else {
+      runs.push((label: g, from: r.at("name"), to: r.at("name")))
+    }
+  }
+  runs.map(g => (from: g.from, to: g.to, label: g.label) + rest.named())
+}
+
 // Draw a neural network from layer specifications
 #let draw-network(
   layers,
@@ -38,6 +154,15 @@
   show-relu: false,
 ) = {
 
+// Reject anything the drawing code would not read, before drawing any of it.
+// An unknown key is otherwise ignored in silence, which turns a typo into a
+// figure that is merely wrong and makes the package, rather than the typo, look
+// like the problem. The same goes for a connection or group naming a layer that
+// does not exist: the route is simply never drawn.
+check-layers(layers, "layer")
+let declared-names = collect-names(layers)
+check-connections(connections, declared-names)
+check-groups(groups, declared-names)
 
 let colors-warm = (
   conv: rgb("#ffe0a1"),
@@ -1049,7 +1174,11 @@ canvas(length: 1cm * scale-factor, {
           // These position themselves against the block they attach to, further down.
           0
         } else {
-          let stated = l.at("offset", default: 1.2)
+          // `auto` is the default: spacing computed from the drawing is right
+          // far more often than any one constant is, and a fixed 1.2 is too
+          // narrow for a deep block, whose lean eats it before it buys any
+          // visible gap at all. A number still means exactly what it did.
+          let stated = l.at("offset", default: auto)
           if stated == auto { auto-offset } else { stated }
         }
     
@@ -2051,7 +2180,9 @@ canvas(length: 1cm * scale-factor, {
           let d = l.at("depth", default: 0.4)
           l.insert("height", h)
           l.insert("depth", d)
-          let w = 0.2
+          // Thin by default, since the thickness of a softmax or an output says
+          // nothing about channel count, but stated when an author states it.
+          let w = l.at("width", default: 0.2)
           let label = l.at("label", default: if l.type == "softmax" { "Softmax" } else { "Output" })
           let name = l.at("name", default: none)
           let layer-show-connection = l.at("show-connection", default: true)
@@ -2250,7 +2381,10 @@ canvas(length: 1cm * scale-factor, {
   let auto-lane = (:)
   let entries = ()
   for (i, conn) in connections.enumerate() {
-    if conn.at("pos", default: 1.25) != auto { continue }
+    // `auto` is the default. A fixed height has to be worked out from the layer
+    // dimensions to clear them, and every route needs a different one or they
+    // overlap, so a constant is only ever right by accident.
+    if conn.at("pos", default: auto) != auto { continue }
     let f = conn.at("from")
     let t = conn.at("to")
     if f not in layer-index or t not in layer-index { continue }
@@ -2314,7 +2448,7 @@ canvas(length: 1cm * scale-factor, {
   {
     let groups = (:)
     for (i, conn) in connections.enumerate() {
-      if conn.at("arrive-offset", default: 0) != auto { continue }
+      if conn.at("arrive-offset", default: auto) != auto { continue }
       if not conn.at("touch-layer", default: false) { continue }
       let f = conn.at("from")
       let t = conn.at("to")
@@ -2370,7 +2504,7 @@ canvas(length: 1cm * scale-factor, {
     // PlotNeuralNet and in most published diagrams, and it is the house style
     // here. "flat" routes underneath, "depth" along the projection.
     let conn-mode = conn.at("mode", default: auto-side.at(str(conn-index), default: "air"))
-    let conn-pos = conn.at("pos", default: 1.25)
+    let conn-pos = conn.at("pos", default: auto)
     if conn-pos == auto {
       let lane = auto-lane.at(str(conn-index), default: 0)
       conn-pos = max-half-extent + conn.at("clearance", default: lane-clearance) + lane * lane-unit
@@ -2456,7 +2590,9 @@ canvas(length: 1cm * scale-factor, {
       // without inventing a second vocabulary for something the mode already
       // says. The offset runs along the edge rather than in x, because the top
       // and bottom edges of the west side follow the isometric depth direction.
-      let arrive-off-raw = conn.at("arrive-offset", default: 0)
+      // `auto` is the default, so a fan into one layer spaces itself; a route
+      // that is the only arrival on its edge lands centred, exactly as 0 did.
+      let arrive-off-raw = conn.at("arrive-offset", default: auto)
       let arrive-off = if arrive-off-raw == auto {
         auto-arrive.at(str(conn-index), default: 0)
       } else { arrive-off-raw }

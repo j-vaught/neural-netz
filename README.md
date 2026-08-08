@@ -45,6 +45,38 @@ You can then call `draw-network` which has the following arguments:
 ```
 See the examples in the following section to understand how to use it. Alternatively, you can also start from already written architecture examples (see the Examples section, near the end).
 
+### Layers, and how to write them
+
+A layer is a dictionary with a `type`, and every option below is a key in it. There is also
+a constructor per type, which is the same thing with the `type` filled in:
+
+```typ
+#import "@preview/neural-netz:0.4.0": draw-network, input, conv, pool
+
+#draw-network((
+  input(image: "default", shape: (3, 640, 640)),
+  conv(shape: (16, 320, 320), label: "P1/2"),
+  conv(shape: (32, 160, 160), label: "P2/4"),
+  pool(),
+))
+```
+
+Prefer the constructors. Each one's signature is exactly the set of options that type
+accepts, so an editor can list them while you type, and Typst rejects a misspelled argument
+by name. The dictionary form stays supported everywhere, including inside `branches`, and
+the two mix freely in one figure.
+
+Either way an option a layer type does not read is an error rather than a silence:
+
+```
+error: unknown layer option "hieght" on layer 3 (type "conv"). Did you mean "height"?
+```
+
+That covers connection and group options too, along with an unknown layer `type` and a
+connection or group naming a layer that has no such `name`. A key that is quietly ignored
+produces a figure that is merely wrong, which reads as the package being broken rather than
+as the typo it is.
+
 ## Getting started
 
 Here are a few simple features for getting started.
@@ -223,13 +255,16 @@ The automatic axis arrows can be named too, with `main-legend` on `draw-network`
 
 #### Automatic lane heights
 
-`pos` is measured from the centre axis, so a value that clears the blocks has to be worked out from the layer heights and depths, and every route needs its own height or they overlap. Give `pos: auto` instead:
+`pos` defaults to `auto`. A number is measured from the centre axis, so a value that clears
+the blocks has to be worked out from the layer heights and depths, and every route needs its
+own or they overlap:
 
 ```typ
-(from: "a", to: "h", type: "skip", mode: "air", pos: auto)
+(from: "a", to: "h", type: "skip", mode: "air")           // placed automatically
+(from: "a", to: "h", type: "skip", mode: "air", pos: 4.5) // placed by hand
 ```
 
-The route is placed clear of the tallest layer, and its height comes from how far it reaches: a route spanning more blocks sits higher, so a longer route always arcs over a shorter one instead of crossing it. Reaches are ranked rather than used directly, so one long route among short ones does not leave a stack of empty lanes beneath it.
+An automatic route is placed clear of the tallest layer, and its height comes from how far it reaches: a route spanning more blocks sits higher, so a longer route always arcs over a shorter one instead of crossing it. Reaches are ranked rather than used directly, so one long route among short ones does not leave a stack of empty lanes beneath it.
 
 Routes of equal reach share a height. Where two of them overlap, the second is routed to the opposite side of the axis at the same height rather than being pushed further out than its reach warrants.
 
@@ -277,24 +312,26 @@ That makes a stage ending in a pool worth writing carefully. Putting `repeat: 3`
 
 By default a connection arrives on the main axis just before its target. `touch-layer: true` lands it on the target itself, choosing a side from the routing mode: `air` arrives on the top edge, `flat` on the bottom, `depth` on the left. Two routes in the same mode therefore land on the same point, with their arrowheads stacked.
 
-`arrive-offset` spreads along whichever edge the mode already chose:
+`arrive-offset` spreads along whichever edge the mode already chose. It defaults to `auto`,
+so a fan into one layer spaces itself and a lone arrival stays centred; give a number to
+place one arrival yourself:
 
 ```typ
-(from: "a", to: "cat", touch-layer: true, pos: auto, arrive-offset: -0.35),
-(from: "b", to: "cat", touch-layer: true, pos: auto, arrive-offset: 0),
-(from: "c", to: "cat", touch-layer: true, pos: auto, arrive-offset: 0.35),
+(from: "a", to: "cat", touch-layer: true, arrive-offset: -0.35),
+(from: "b", to: "cat", touch-layer: true, arrive-offset: 0),
+(from: "c", to: "cat", touch-layer: true, arrive-offset: 0.35),
 ```
 
 Several routes can then fan into one layer, which is what a concat needs. The offset runs along the edge rather than in x: the top and bottom edges of a block's west side follow the isometric depth direction, so shifting horizontally would walk the arrival off the block.
 
 A route arriving on the bottom or left edge has its final stretch drawn behind the layer. Those edges are on the far side of the block, so the route genuinely passes underneath it before reaching them; drawing that stretch on top makes it look like the line runs across the front face. Since layers are semi-transparent it shows faintly rather than disappearing. Arrivals on the top edge are unaffected, as nothing overlaps them.
 
-`arrive-offset: auto` spaces a whole fan without picking numbers:
+Left alone, a whole fan spaces itself:
 
 ```typ
-(from: "a", to: "cat", touch-layer: true, pos: auto, arrive-offset: auto),
-(from: "b", to: "cat", touch-layer: true, pos: auto, arrive-offset: auto),
-(from: "c", to: "cat", touch-layer: true, pos: auto, arrive-offset: auto),
+(from: "a", to: "cat", touch-layer: true),
+(from: "b", to: "cat", touch-layer: true),
+(from: "c", to: "cat", touch-layer: true),
 ```
 
 Routes are grouped by the edge they land on, which is the target layer plus the routing mode, then spread across it. `k` routes divide the edge into `k + 1` intervals and sit at the interior boundaries, so the outermost pair is inset rather than sitting on the corners, and they are ordered by where each route starts so a fan does not cross itself. Add a route and the rest respace.
@@ -331,13 +368,15 @@ Only `conv`, `convres` and `custom` take a derived width, since their thickness 
 
 ### Spacing layers automatically
 
-`offset: auto` leaves the spacing to the drawing:
+`offset` defaults to `auto`, which leaves the spacing to the drawing. A number overrides it
+for one layer:
 
 ```typ
-(type: "conv", shape: (128, 40, 40), offset: auto)
+conv(shape: (128, 40, 40))            // spaced automatically
+conv(shape: (128, 40, 40), offset: 3) // spaced by hand
 ```
 
-It covers the previous layer's isometric lean, adds a constant strip of white space, and widens to `min-clear-offset` where a connection descends into that gap. Both inputs are already known at that point: the previous depth, and whether the connection list names this layer as a target.
+Automatic spacing covers the previous layer's isometric lean, adds a constant strip of white space, and widens to `min-clear-offset` where a connection descends into that gap. Both inputs are already known at that point: the previous depth, and whether the connection list names this layer as a target.
 
 Working the same thing out in a figure means restating the size pyramid twice, once in the layers and once in the offsets, with nothing to catch them drifting apart. `depth-shear` and `min-clear-offset` stay exported for anything unusual, but ordinary spacing does not need them.
 
@@ -427,6 +466,63 @@ legend-title: "My new layers" // You can also change the legend title
 <img src="gallery/features/customize.png" alt="Custom layer example" width="450"/>
 </p>
 
+
+### Importing a model instead of drawing one
+
+Everything above assumes you type the architecture out. If the architecture already exists as
+code, you should not have to. `tools/import_model.py` traces a model and writes one record per
+layer — its type, its name, and the shape of what it produces — and `from-shapes` turns that
+file into a layer list:
+
+```bash
+uv run tools/import_model.py --torchvision resnet18 -o resnet18.json
+```
+
+```typ
+#import "@preview/neural-netz:0.4.0": draw-network, from-shapes, groups-from-shapes
+
+#let data = json("resnet18.json")
+
+#draw-network(
+  from-shapes(data),
+  groups: groups-from-shapes(data),
+)
+```
+
+That is the whole figure. It works because the geometry was already derived: `shape` sizes each
+block and `offset: auto` spaces them, so a shape and a type is all a layer needs. Change a channel
+count in the model, rerun the importer, and the drawing follows.
+
+Shapes come from a real forward pass rather than from reading the module tree, because the tree
+does not know what a stride does. Sources are `--torchvision NAME`, `--module pkg.mod:factory`,
+`--checkpoint model.pt`, or `--onnx graph.onnx` (which needs no forward pass, since ONNX carries
+inferred shapes already). `--input` sets the traced input size, `--group-depth` how coarse a stage
+bracket is, and `--collapse` folds runs of identical adjacent layers into a repeat count.
+
+`from-shapes` takes the import as a starting point rather than a verdict. `defaults` applies a
+field to every layer, `by-op` to every layer that came from a given module class, `overrides` to
+one layer by name, and `drop` removes layers entirely — all while keeping the derived sizing.
+
+| Option | Effect |
+|---|---|
+| `label` | What names each block: `"leaf"`, `"path"`, `"op"`, `"shape"` or `none` |
+| `defaults` | Merged into every layer |
+| `by-op` | Keyed by module class, e.g. `(MultiheadAttention: (fill: …))` |
+| `overrides` | Keyed by layer name |
+| `drop` | Layer names to omit |
+
+**What a trace cannot see.** Hooks observe modules, and plenty of a model is not a module. A
+residual add written `out += identity` inside a block's `forward` is an operation on a tensor,
+so nothing hooks it and an imported ResNet arrives as its trunk with the shortcuts missing. Name
+them by hand in `connections`, using the same layer names the importer emits — the
+[ResNet-18 example](examples/imported/resnet18.typ) does exactly this for all eight. The mirror
+of that problem is a module whose children never run: `MultiheadAttention` dispatches to a fused
+kernel, so the importer hooks it whole rather than descending into it.
+
+<p align="center">
+<img src="gallery/imported/resnet18.png" alt="ResNet-18 imported from torchvision" width="750"/>
+</p>
+<p style="text-align: center;">ResNet-18, imported. Only the eight residual shortcuts are written by hand.</p>
 
 ## Examples
 Here are a few network architectures implemented with neural-netz (more examples can be found [in the repo](https://github.com/edgaremy/neural-netz/tree/db550ba2eda99ffbcbb01c1e0374ea6519e16a74/examples/networks)).

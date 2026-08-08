@@ -10,7 +10,7 @@
     depth: 8,
     label: "input",
     channels: (3, 224),
-    show-connections: true,
+    show-connection: true,
   ),
   (
     type: "conv",

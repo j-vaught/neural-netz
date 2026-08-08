@@ -1,0 +1,429 @@
+{
+ "meta": {
+  "source": "torchvision:resnet18",
+  "input": [
+   3,
+   224,
+   224
+  ],
+  "params": 11689512,
+  "layers": 24
+ },
+ "layers": [
+  {
+   "name": "input",
+   "path": "input",
+   "op": "Input",
+   "type": "input",
+   "shape": [
+    3,
+    224,
+    224
+   ],
+   "params": 0,
+   "group": "input",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "conv1",
+   "path": "conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    64,
+    112,
+    112
+   ],
+   "params": 9408,
+   "group": "conv1",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "maxpool",
+   "path": "maxpool",
+   "op": "MaxPool2d",
+   "type": "pool",
+   "shape": [
+    64,
+    56,
+    56
+   ],
+   "params": 0,
+   "group": "maxpool",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "layer1_0_conv1",
+   "path": "layer1.0.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    64,
+    56,
+    56
+   ],
+   "params": 36864,
+   "group": "layer1",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer1_0_conv2",
+   "path": "layer1.0.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    64,
+    56,
+    56
+   ],
+   "params": 36864,
+   "group": "layer1",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer1_1_conv1",
+   "path": "layer1.1.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    64,
+    56,
+    56
+   ],
+   "params": 36864,
+   "group": "layer1",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer1_1_conv2",
+   "path": "layer1.1.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    64,
+    56,
+    56
+   ],
+   "params": 36864,
+   "group": "layer1",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer2_0_conv1",
+   "path": "layer2.0.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    128,
+    28,
+    28
+   ],
+   "params": 73728,
+   "group": "layer2",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer2_0_conv2",
+   "path": "layer2.0.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    128,
+    28,
+    28
+   ],
+   "params": 147456,
+   "group": "layer2",
+   "relu": false,
+   "folded": [
+    "BatchNorm2d"
+   ]
+  },
+  {
+   "name": "layer2_0_downsample_0",
+   "path": "layer2.0.downsample.0",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    128,
+    28,
+    28
+   ],
+   "params": 8192,
+   "group": "layer2",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer2_1_conv1",
+   "path": "layer2.1.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    128,
+    28,
+    28
+   ],
+   "params": 147456,
+   "group": "layer2",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer2_1_conv2",
+   "path": "layer2.1.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    128,
+    28,
+    28
+   ],
+   "params": 147456,
+   "group": "layer2",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer3_0_conv1",
+   "path": "layer3.0.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    256,
+    14,
+    14
+   ],
+   "params": 294912,
+   "group": "layer3",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer3_0_conv2",
+   "path": "layer3.0.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    256,
+    14,
+    14
+   ],
+   "params": 589824,
+   "group": "layer3",
+   "relu": false,
+   "folded": [
+    "BatchNorm2d"
+   ]
+  },
+  {
+   "name": "layer3_0_downsample_0",
+   "path": "layer3.0.downsample.0",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    256,
+    14,
+    14
+   ],
+   "params": 32768,
+   "group": "layer3",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer3_1_conv1",
+   "path": "layer3.1.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    256,
+    14,
+    14
+   ],
+   "params": 589824,
+   "group": "layer3",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer3_1_conv2",
+   "path": "layer3.1.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    256,
+    14,
+    14
+   ],
+   "params": 589824,
+   "group": "layer3",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer4_0_conv1",
+   "path": "layer4.0.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    512,
+    7,
+    7
+   ],
+   "params": 1179648,
+   "group": "layer4",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer4_0_conv2",
+   "path": "layer4.0.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    512,
+    7,
+    7
+   ],
+   "params": 2359296,
+   "group": "layer4",
+   "relu": false,
+   "folded": [
+    "BatchNorm2d"
+   ]
+  },
+  {
+   "name": "layer4_0_downsample_0",
+   "path": "layer4.0.downsample.0",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    512,
+    7,
+    7
+   ],
+   "params": 131072,
+   "group": "layer4",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer4_1_conv1",
+   "path": "layer4.1.conv1",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    512,
+    7,
+    7
+   ],
+   "params": 2359296,
+   "group": "layer4",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "layer4_1_conv2",
+   "path": "layer4.1.conv2",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    512,
+    7,
+    7
+   ],
+   "params": 2359296,
+   "group": "layer4",
+   "relu": true,
+   "folded": [
+    "BatchNorm2d",
+    "ReLU"
+   ]
+  },
+  {
+   "name": "avgpool",
+   "path": "avgpool",
+   "op": "AdaptiveAvgPool2d",
+   "type": "gap",
+   "shape": [
+    512,
+    1,
+    1
+   ],
+   "params": 0,
+   "group": "avgpool",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "fc",
+   "path": "fc",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    1000
+   ],
+   "params": 513000,
+   "group": "fc",
+   "relu": false,
+   "folded": []
+  }
+ ]
+}

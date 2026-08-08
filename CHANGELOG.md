@@ -7,6 +7,22 @@ Edgar Remy. Every feature below is opt-in with defaults reproducing 0.3 behaviou
 where listed under "Changed defaults". A golden-image regression harness in `tests/` guards
 that claim.
 
+### Constructors, and options that fail loudly
+
+- A constructor per layer type: `conv(shape: (64, 160, 160), label: "P2")` rather than
+  `(type: "conv", shape: (64, 160, 160), label: "P2")`. Each signature is the list of
+  options that type accepts, so an editor can show it while you type, and Typst rejects a
+  misspelled argument before the package sees it. The dictionary form still works
+  everywhere and is validated identically. `connection(..)` and `group(..)` likewise.
+- An option a layer type does not read is now an error naming the nearest real option,
+  rather than being ignored in silence. `(type: "conv", hieght: 4)` used to draw a figure
+  that was merely wrong; it now says so, and suggests `height`. The same holds for
+  connection and group options, for an unknown layer `type`, and for a connection or group
+  naming a layer that does not exist.
+- The check found three of these in the bundled examples: `show-connections` on AlexNet's
+  input, `widths` on U-Net's, and `width` on an `output` in `fusion-operators`. All three
+  are fixed, and `width` now works on `softmax` and `output` rather than being ignored.
+
 ### Parallel branches
 
 - `(type: "branch", branches: (...))` draws genuinely parallel sub-networks: three detection
@@ -58,6 +74,14 @@ that claim.
 
 ### Changed defaults (deliberate breaks with 0.3)
 
+- `offset`, `pos` and `arrive-offset` default to `auto`. Each of the three replaced a
+  constant that could only ever be right by accident: `offset: 1.2` is narrower than a deep
+  block's own isometric lean, so the gap it bought was invisible and the axis arrow ran
+  behind the previous block; `pos: 1.25` put every route at one height, so any two of them
+  overlapped; `arrive-offset: 0` stacked a whole fan-in on one point. A number still means
+  exactly what it did, and a single arrival on an edge still lands where `0` put it. This
+  is the one change here that moves existing figures, and it moves them apart rather than
+  together — every re-baselined example above gained clearance it should have had.
 - Arrows and connections are black rather than dark teal.
 - The sum node is a flat white disc with a black outline and symbol rather than a green
   radial-gradient sphere. `fill`, `stroke` and `symbol` are per-layer overrides.

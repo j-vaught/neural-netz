@@ -1,0 +1,671 @@
+{
+ "meta": {
+  "source": "torchvision:vit_b_16",
+  "input": [
+   3,
+   224,
+   224
+  ],
+  "params": 86567656,
+  "layers": 39
+ },
+ "layers": [
+  {
+   "name": "input",
+   "path": "input",
+   "op": "Input",
+   "type": "input",
+   "shape": [
+    3,
+    224,
+    224
+   ],
+   "params": 0,
+   "group": "input",
+   "relu": false,
+   "folded": []
+  },
+  {
+   "name": "conv_proj",
+   "path": "conv_proj",
+   "op": "Conv2d",
+   "type": "conv",
+   "shape": [
+    768,
+    14,
+    14
+   ],
+   "params": 590592,
+   "group": "conv_proj",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_0_self_attention",
+   "path": "encoder.layers.encoder_layer_0.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_0",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_0_mlp_0",
+   "path": "encoder.layers.encoder_layer_0.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_0",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_0_mlp_3",
+   "path": "encoder.layers.encoder_layer_0.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_0",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_1_self_attention",
+   "path": "encoder.layers.encoder_layer_1.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_1",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_1_mlp_0",
+   "path": "encoder.layers.encoder_layer_1.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_1",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_1_mlp_3",
+   "path": "encoder.layers.encoder_layer_1.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_1",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_2_self_attention",
+   "path": "encoder.layers.encoder_layer_2.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_2",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_2_mlp_0",
+   "path": "encoder.layers.encoder_layer_2.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_2",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_2_mlp_3",
+   "path": "encoder.layers.encoder_layer_2.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_2",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_3_self_attention",
+   "path": "encoder.layers.encoder_layer_3.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_3",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_3_mlp_0",
+   "path": "encoder.layers.encoder_layer_3.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_3",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_3_mlp_3",
+   "path": "encoder.layers.encoder_layer_3.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_3",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_4_self_attention",
+   "path": "encoder.layers.encoder_layer_4.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_4",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_4_mlp_0",
+   "path": "encoder.layers.encoder_layer_4.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_4",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_4_mlp_3",
+   "path": "encoder.layers.encoder_layer_4.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_4",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_5_self_attention",
+   "path": "encoder.layers.encoder_layer_5.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_5",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_5_mlp_0",
+   "path": "encoder.layers.encoder_layer_5.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_5",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_5_mlp_3",
+   "path": "encoder.layers.encoder_layer_5.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_5",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_6_self_attention",
+   "path": "encoder.layers.encoder_layer_6.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_6",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_6_mlp_0",
+   "path": "encoder.layers.encoder_layer_6.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_6",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_6_mlp_3",
+   "path": "encoder.layers.encoder_layer_6.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_6",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_7_self_attention",
+   "path": "encoder.layers.encoder_layer_7.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_7",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_7_mlp_0",
+   "path": "encoder.layers.encoder_layer_7.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_7",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_7_mlp_3",
+   "path": "encoder.layers.encoder_layer_7.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_7",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_8_self_attention",
+   "path": "encoder.layers.encoder_layer_8.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_8",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_8_mlp_0",
+   "path": "encoder.layers.encoder_layer_8.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_8",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_8_mlp_3",
+   "path": "encoder.layers.encoder_layer_8.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_8",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_9_self_attention",
+   "path": "encoder.layers.encoder_layer_9.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_9",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_9_mlp_0",
+   "path": "encoder.layers.encoder_layer_9.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_9",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_9_mlp_3",
+   "path": "encoder.layers.encoder_layer_9.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_9",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_10_self_attention",
+   "path": "encoder.layers.encoder_layer_10.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_10",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_10_mlp_0",
+   "path": "encoder.layers.encoder_layer_10.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_10",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_10_mlp_3",
+   "path": "encoder.layers.encoder_layer_10.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_10",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_11_self_attention",
+   "path": "encoder.layers.encoder_layer_11.self_attention",
+   "op": "MultiheadAttention",
+   "type": "conv",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 1771776,
+   "group": "encoder.layers.encoder_layer_11",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_11_mlp_0",
+   "path": "encoder.layers.encoder_layer_11.mlp.0",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    3072,
+    197,
+    1
+   ],
+   "params": 2362368,
+   "group": "encoder.layers.encoder_layer_11",
+   "relu": true,
+   "folded": [
+    "GELU"
+   ]
+  },
+  {
+   "name": "encoder_layers_encoder_layer_11_mlp_3",
+   "path": "encoder.layers.encoder_layer_11.mlp.3",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    768,
+    197,
+    1
+   ],
+   "params": 2360064,
+   "group": "encoder.layers.encoder_layer_11",
+   "relu": false,
+   "folded": [
+    "LayerNorm"
+   ]
+  },
+  {
+   "name": "heads_head",
+   "path": "heads.head",
+   "op": "Linear",
+   "type": "fc",
+   "shape": [
+    1000
+   ],
+   "params": 769000,
+   "group": "heads.head",
+   "relu": false,
+   "folded": []
+  }
+ ]
+}
