@@ -739,7 +739,10 @@ canvas(length: 1cm * scale-factor, {
           let spread = l.at("spread", default: 6)
           let lead = l.at("lead", default: 1.2)
           let n = subs.len()
-          let branch-start = x + lead
+          // The turn has to clear the preceding block's sheared face, not just
+          // its front edge, or the vertical run is drawn across it.
+          let turn-out = calc.max(x + lead / 2, prev-x + prev-depth-offset + 0.15)
+          let branch-start = turn-out + lead / 2
           let ends = ()
 
           for (bi, sub) in subs.enumerate() {
@@ -757,14 +760,39 @@ canvas(length: 1cm * scale-factor, {
             // reach plus however far it was displaced.
             max-half-extent = calc.max(max-half-extent, r.max-half-extent + calc.abs(dy))
 
-            draw-segment-with-arrow(x, arrow-axis-y, branch-start, arrow-axis-y + dy)
-            ends.push((x: r.prev-x + r.prev-depth-offset, y: arrow-axis-y + dy, end: r.end-x))
+            // Orthogonal, like every other route in the package: out along the
+            // axis, across to the branch's height, then in. A diagonal would be
+            // the only slanted line in a figure that is otherwise all right
+            // angles.
+            let by = arrow-axis-y + dy
+            let turn = turn-out
+            if dy == 0 {
+              draw-connection-path((((x, arrow-axis-y), (branch-start, by)),), opacity: 0.7)
+            } else {
+              draw-connection-path((
+                ((x, arrow-axis-y), (turn, arrow-axis-y)),
+                ((turn, arrow-axis-y), (turn, by)),
+                ((turn, by), (branch-start, by)),
+              ), opacity: 0.7)
+            }
+            ends.push((x: r.prev-x + r.prev-depth-offset, y: by, dy: dy, end: r.end-x))
           }
 
           // Rejoin where the longest branch finishes, so none is cut short.
-          let resume = ends.map(e => e.end).fold(x, calc.max) + lead
+          // Measured from the sheared right edge of each branch's last block, so
+          // the rejoin turns clear of them too.
+          let resume = ends.map(e => e.x).fold(x, calc.max) + lead
           for e in ends {
-            draw-segment-with-arrow(e.x, e.y, resume, arrow-axis-y)
+            let turn = resume - lead / 2
+            if e.dy == 0 {
+              draw-connection-path((((e.x, e.y), (resume, arrow-axis-y)),), opacity: 0.7)
+            } else {
+              draw-connection-path((
+                ((e.x, e.y), (turn, e.y)),
+                ((turn, e.y), (turn, arrow-axis-y)),
+                ((turn, arrow-axis-y), (resume, arrow-axis-y)),
+              ), opacity: 0.7)
+            }
           }
 
           x = resume
