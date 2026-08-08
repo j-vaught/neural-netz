@@ -356,9 +356,13 @@ Set the white space with `auto-gap` on `draw-network`.
 ))
 ```
 
-Each branch is a layer list of its own, walked at its own height and rejoined afterwards. `spread` sets the vertical separation, centred on the trunk with the first branch highest, and `lead` how far the fan-out and rejoin arrows run.
+Each branch is a layer list of its own, walked at its own offset and rejoined afterwards. `spread` sets the separation, centred on the trunk with the first branch furthest out, and `lead` how far the fan-out and rejoin arrows run. An odd count puts one branch on the trunk line; an even count leaves it empty.
 
-The rejoin waits for the longest branch rather than cutting the others short. Named layers inside a branch join the same table the trunk uses, so connections and groups can reference them. A branch may contain branches.
+`spread-mode: "depth"` stacks the branches along the projection's 45-degree axis instead, away and near, so they read as parallel copies sitting behind one another. The fan-out and rejoin become two parallel spines with horizontal teeth, a parallelogram.
+
+A filled dot marks each point where the flow divides or meets, and where a tooth leaves a spine that passes through. Merging routes terminate at the dot and a single arrow leaves it for the next block. Connections aimed at a branch's first layer land on its incoming tooth at the arrowhead, the same way a connection to a trunk layer lands on the axis arrow in front of it.
+
+The rejoin waits for the longest branch rather than cutting the others short. Named layers inside a branch join the same table the trunk uses, so connections, groups and `pos: auto` lane ranking all reach into branches. A branch may contain branches.
 
 ### Predefined layer types
 

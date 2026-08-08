@@ -449,16 +449,18 @@ canvas(length: 1cm * scale-factor, {
     }
   }
   
-  let draw-segment-with-arrow(x1, y1, x2, y2, opacity: 0.7, style: none) = {
+  let draw-segment-with-arrow(x1, y1, x2, y2, opacity: 0.7, style: none, head: true) = {
     let paint = if style == none { colors.connection } else { style.paint }
     let thickness = if style == none { strokes.connection.thickness } else { style.thickness }
     let dash = if style == none { none } else { style.dash }
     line((x1, y1), (x2, y2),
       stroke: (paint: paint, thickness: thickness, dash: dash, cap: "butt"))
-    draw-arrow-icon(x1, y1, x2, y2, opacity: opacity, paint: paint)
+    if head {
+      draw-arrow-icon(x1, y1, x2, y2, opacity: opacity, paint: paint)
+    }
   }
 
-  let draw-connection-path(segments, opacity: 0.7, layers: none, layer-positions-ref: (:), show-relu: false, style: none, tail-behind: false) = {
+  let draw-connection-path(segments, opacity: 0.7, layers: none, layer-positions-ref: (:), show-relu: false, style: none, tail-behind: false, heads: auto) = {
     // If there are layers to draw on segment idx==1, we need to split that segment
     if layers != none and layers.len() > 0 {
       // Draw first segment (idx==0) normally
@@ -643,13 +645,14 @@ canvas(length: 1cm * scale-factor, {
       // No layers, draw all segments normally
       for (si, seg) in segments.enumerate() {
         let last = si == segments.len() - 1
+        let seg-head = if heads == auto { true } else { heads.at(si, default: true) }
         if tail-behind and last {
           // The arrival edge is on the far side of the block, so the tail of the
           // route passes underneath it. Drawing it on top makes the line look
           // like it runs across the front face instead of arriving behind.
-          on-layer(-1, draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity, style: style))
+          on-layer(-1, draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity, style: style, head: seg-head))
         } else {
-          draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity, style: style)
+          draw-segment-with-arrow(seg.at(0).at(0), seg.at(0).at(1), seg.at(1).at(0), seg.at(1).at(1), opacity: opacity, style: style, head: seg-head)
         }
       }
     }
@@ -740,8 +743,16 @@ canvas(length: 1cm * scale-factor, {
           let spread = l.at("spread", default: 6)
           let lead = l.at("lead", default: 2.0)
           let n = subs.len()
+          // "depth" stacks the branches along the projection's own axis rather
+          // than straight up: the front branch stays on the trunk line and the
+          // rest step back and up along the direction the blocks are sheared.
+          // The fan-out and rejoin are then two parallel 45-degree spines with
+          // horizontals between them, a parallelogram, rather than the mirrored
+          // hexagon a vertical split produces. Neither 45 is a free angle: it is
+          // the one the projection itself uses.
+          let depth-spread = l.at("spread-mode", default: "vertical") == "depth"
           // The turn has to clear the preceding block's sheared face, not just
-          // its front edge, or the vertical run is drawn across it.
+          // its front edge, or the run across is drawn over it.
           let turn-out = calc.max(x + lead / 2, prev-x + prev-depth-offset + 0.15)
           // Both ends sit half a depth inside the block, which is where the axis
           // arrows start and finish. Using the outer edges instead made the route
@@ -752,10 +763,35 @@ canvas(length: 1cm * scale-factor, {
           let branch-start = turn-out + lead / 2
           let ends = ()
 
+          // The outgoing spine, drawn once: the teeth into each branch leave
+          // from points along it. It crosses the axis midway, so the flow reads
+          // as arriving and splitting away and near, and the two half-spines
+          // carry arrows radiating from that crossing.
+          let spine-cross = turn-out + spread / 2
+          // A filled dot marks the point where the flow divides, and its twin
+          // below marks where it meets again. Several routes pass through these
+          // points, so without a marker the crossing reads as incidental overlap
+          // rather than as a junction.
+          let junction(px, py) = circle((px, py), radius: 0.09, fill: colors.connection, stroke: none)
+          if depth-spread and n > 1 {
+            draw-connection-path((((branch-from-x, branch-from-y), (spine-cross, branch-from-y)),), opacity: 0.7)
+            draw-connection-path((((spine-cross, branch-from-y), (turn-out + spread, branch-from-y + spread / 2)),), opacity: 0.7)
+            draw-connection-path((((spine-cross, branch-from-y), (turn-out, branch-from-y - spread / 2)),), opacity: 0.7)
+            junction(spine-cross, branch-from-y)
+          }
+
           for (bi, sub) in subs.enumerate() {
-            // Centred on the trunk, first branch highest.
-            let dy = if n <= 1 { 0 } else { spread * ((n - 1) / 2 - bi) / (n - 1) }
-            let r = walk-trunk(sub, branch-start, arrow-axis-y + dy)
+            // Centred on the trunk, first branch highest. In depth mode the
+            // offset applies to x and y equally, anchored so the front branch
+            // sits on the trunk line itself.
+            let k = if n <= 1 { 0 } else { spread * ((n - 1) / 2 - bi) / (n - 1) }
+            // Centred: as many branches near as away, and an even count leaves
+            // the trunk line itself empty. dy is symmetric about the axis; dx
+            // carries the extra half-spread so the near branch is not pushed
+            // left into the block the split leaves from.
+            let dx = if depth-spread and n > 1 { k + spread / 2 } else { 0 }
+            let dy = k
+            let r = walk-trunk(sub, branch-start + dx, arrow-axis-y + dy)
 
             for (k, v) in r.positions { layer-positions.insert(k, v) }
             for (k, v) in r.segments { arrow-segments.insert(k, v) }
@@ -766,57 +802,132 @@ canvas(length: 1cm * scale-factor, {
             // reach plus however far it was displaced.
             max-half-extent = calc.max(max-half-extent, r.max-half-extent + calc.abs(dy))
 
-            // Orthogonal, like every other route in the package: out along the
-            // axis, across to the branch's height, then in. A diagonal would be
-            // the only slanted line in a figure that is otherwise all right
-            // angles.
             // Anchored like the axis arrows: leaving from the previous block's
-            // perspective centre rather than from the axis itself, which is only
-            // the same point for a layer of zero depth.
-            // Arrive where the branch's first block wants its arrow, which is
-            // that block's perspective centre, not the branch's axis. Those
-            // differ by half the block's depth offset, so aiming at the axis put
-            // the route across the block's face.
+            // perspective centre, arriving where the branch's first block wants
+            // its arrow. Aiming at the branch axis instead put the route across
+            // the block's face.
             let (in-x, in-y) = if r.first-west == none {
-              (branch-start, arrow-axis-y + dy)
+              (branch-start + dx, arrow-axis-y + dy)
             } else { r.first-west }
             let turn = turn-out
-            if calc.abs(in-y - branch-from-y) < 0.001 {
-              draw-connection-path((((branch-from-x, branch-from-y), (in-x, in-y)),), opacity: 0.7)
+            if depth-spread {
+              // A horizontal tooth from the spine into the branch. The front
+              // branch is on the trunk line, so its tooth is the trunk's own
+              // continuation from the block it left.
+              let from = if n <= 1 { (branch-from-x, branch-from-y) } else { (turn + dx, branch-from-y + dy) }
+              draw-connection-path(((from, (in-x, in-y)),), opacity: 0.7)
+              // Where the tooth leaves the spine is a junction on the inner
+              // rows, since the spine passes through on its way to the outer
+              // ones. The outermost rows are corners, and the axis row's point
+              // is the crossing dot already drawn.
+              if bi != 0 and bi != n - 1 and calc.abs(dy) > 0.001 {
+                junction(turn + dx, branch-from-y + dy)
+              }
+            } else if calc.abs(in-y - branch-from-y) < 0.001 {
+              // The on-axis branch's tooth starts at the split dot, not at the
+              // source block. Drawn from the block it would run through the dot
+              // and its mid-segment head would sit just past the dot instead of
+              // centred between the dot and the branch.
+              let from-x = if n <= 1 { branch-from-x } else { turn }
+              draw-connection-path((((from-x, branch-from-y), (in-x, in-y)),), opacity: 0.7)
             } else {
               draw-connection-path((
                 ((branch-from-x, branch-from-y), (turn, branch-from-y)),
                 ((turn, branch-from-y), (turn, in-y)),
                 ((turn, in-y), (in-x, in-y)),
               ), opacity: 0.7)
+              junction(turn, branch-from-y)
             }
             // Drawn after the route, so the blocks cover it the way a layer
             // covers the arrow arriving at it.
             r.body
-            ends.push((x: r.prev-x + r.prev-depth-offset / 2, shear: r.prev-depth-offset / 2, y: r.prev-center-y, dy: dy, end: r.end-x))
+
+            // The tooth is this branch's incoming arrow. Registering it means a
+            // connection aimed at the branch's first layer lands on the tooth at
+            // its arrowhead, the same way a connection to a trunk layer lands on
+            // the axis arrow in front of it, instead of falling back to a point
+            // half a depth inside the block.
+            let first-name = if sub.len() > 0 { sub.first().at("name", default: none) } else { none }
+            if first-name != none and first-name + "-in" not in arrow-segments {
+              let tooth-start-x = if depth-spread {
+                if n <= 1 { branch-from-x } else { turn + dx }
+              } else {
+                if n <= 1 { branch-from-x } else { turn }
+              }
+              let mid = ((tooth-start-x + in-x) / 2, in-y)
+              arrow-segments.insert(first-name + "-in", (end: (in-x, in-y), mid: mid, x: mid.at(0), y: mid.at(1)))
+            }
+            let last-name = if sub.len() > 0 { sub.last().at("name", default: none) } else { none }
+            ends.push((x: r.prev-x + r.prev-depth-offset / 2, shear: r.prev-depth-offset / 2, y: r.prev-center-y, dy: dy, dx: dx, bi: bi, last-name: last-name, end: r.end-x))
           }
 
           // Rejoin where the longest branch finishes, so none is cut short.
           // Measured from the sheared right edge of each branch's last block, so
           // the rejoin turns clear of them too.
-          let resume = ends.map(e => e.x + e.shear).fold(x, calc.max) + lead
-          for e in ends {
-            let turn = resume - lead / 2
-            if e.dy == 0 {
-              draw-connection-path((((e.x, e.y), (resume, arrow-axis-y)),), opacity: 0.7)
-            } else {
-              draw-connection-path((
-                ((e.x, e.y), (turn, e.y)),
-                ((turn, e.y), (turn, arrow-axis-y)),
-                ((turn, arrow-axis-y), (resume, arrow-axis-y)),
-              ), opacity: 0.7)
+          let rturn0 = ends.map(e => e.x + e.shear - e.at("dx", default: 0)).fold(branch-start, calc.max) + lead / 2
+          let rcross = rturn0 + spread / 2
+          let resume = if depth-spread {
+            rcross + lead / 2
+          } else {
+            ends.map(e => e.x + e.shear).fold(x, calc.max) + lead
+          }
+          if depth-spread {
+            // The incoming spine mirrors the outgoing one: exits run onto it
+            // horizontally, the away half comes forward and the near half rises,
+            // meeting on the axis and continuing to the resume point.
+            for e in ends {
+              let out-x = if n <= 1 { resume } else { rturn0 + e.dx }
+              if n <= 1 {
+                draw-connection-path((((e.x, e.y), (resume, arrow-axis-y)),), opacity: 0.7)
+              } else {
+                draw-connection-path((((e.x, e.y), (out-x, e.y)),), opacity: 0.7)
+              }
+              if e.last-name != none and e.last-name + "-out" not in arrow-segments {
+                let mid = ((e.x + out-x) / 2, e.y)
+                arrow-segments.insert(e.last-name + "-out", (start: (e.x, e.y), mid: mid, x: mid.at(0), y: mid.at(1)))
+              }
+              if e.bi != 0 and e.bi != n - 1 and calc.abs(e.dy) > 0.001 {
+                junction(out-x, e.y)
+              }
             }
-            // Left on the axis for the next layer to draw its own arrow into,
-            // as any other layer would.
+            if n > 1 {
+              draw-connection-path((((rturn0 + spread, arrow-axis-y + spread / 2), (rcross, arrow-axis-y)),), opacity: 0.7)
+              draw-connection-path((((rturn0, arrow-axis-y - spread / 2), (rcross, arrow-axis-y)),), opacity: 0.7)
+              junction(rcross, arrow-axis-y)
+            }
+          } else {
+            for e in ends {
+              let turn = resume - lead / 2
+              let out-x = if n <= 1 { resume } else { turn }
+              if e.last-name != none and e.last-name + "-out" not in arrow-segments {
+                let mid = ((e.x + out-x) / 2, e.y)
+                arrow-segments.insert(e.last-name + "-out", (start: (e.x, e.y), mid: mid, x: mid.at(0), y: mid.at(1)))
+              }
+              // Routes end at the junction. The stretch from the dot to the
+              // next block is the trunk's own arrow, drawn once by the next
+              // layer, so it carries a single head rather than one per branch.
+              if n <= 1 {
+                draw-connection-path((((e.x, e.y), (resume, arrow-axis-y)),), opacity: 0.7)
+              } else if e.dy == 0 {
+                draw-connection-path((((e.x, e.y), (turn, arrow-axis-y)),), opacity: 0.7)
+              } else {
+                draw-connection-path((
+                  ((e.x, e.y), (turn, e.y)),
+                  ((turn, e.y), (turn, arrow-axis-y)),
+                ), opacity: 0.7)
+                junction(turn, arrow-axis-y)
+              }
+            }
           }
 
-          x = resume
-          prev-x = resume
+          let dot-x = if n <= 1 { resume } else if depth-spread { rcross } else { resume - lead / 2 }
+          // The arrow into the next block leaves from the merge dot, but the
+          // drawing extends past it: in depth mode the away rows and their spine
+          // reach spread/2 further right. The cursor advances past all of it so
+          // the next block clears the parallelogram, while prev-x stays at the
+          // dot so the trunk arrow still originates there.
+          x = if depth-spread and n > 1 { rturn0 + spread } else { dot-x }
+          prev-x = dot-x
           prev-depth-offset = 0
           prev-center-y = arrow-axis-y
           prev-pool-width = 0

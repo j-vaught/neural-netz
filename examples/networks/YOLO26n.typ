@@ -68,10 +68,18 @@
   (type: "convres", shape: (256, 20, 20), label: "C3k2", channels: (256, 20), name: "n5", offset: auto, ..lbl),
 
   // ---- Head ----
-  // The one hand-set gap: two connections come down here, not one.
-  (type: "custom", width: 0.7, height: 5, shape: (256, 20, 20), label: "Detect", channels: ("P3 / P4 / P5",),
-    fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "head",
-    offset: 2.6, ..lbl),
+  // Three heads drawn as three heads, stacked along the depth axis: P4 on the
+  // trunk line, P3 away, P5 near. Sized alike rather than from shape, since a
+  // head is a module reading a level, not a feature map, and letting each take
+  // its level's resolution makes the P3 one tower over the figure.
+  (type: "branch", spread: 7, lead: 3.0, spread-mode: "depth", branches: (
+    ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P3", channels: (256, 80),
+      fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "hp3", ..lbl),),
+    ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P4", channels: (256, 40),
+      fill: head-color, opacity: 0.9, show-relu: false, name: "hp4", ..lbl),),
+    ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P5", channels: (256, 20),
+      fill: head-color, opacity: 0.9, show-relu: false, name: "hp5", ..lbl),),
+  )),
   (type: "output", label: "boxes + cls", height: 4, depth: 0.3, name: "out", offset: auto, ..lbl),
 ), groups: (
   // Two levels. The inner row names each stage, the outer row the three parts
@@ -84,18 +92,18 @@
   (from: "sppf", to: "p5", label: "context"),
   (from: "u4", to: "n3", label: "top-down"),
   (from: "d4", to: "n5", label: "bottom-up"),
-  (from: "head", to: "out", label: "detect"),
+  (from: "hp3", to: "out", label: "detect"),
 
   (from: "p1", to: "p5", label: "Backbone", offset: 2.5, color: rgb("#73000A")),
   (from: "u4", to: "n5", label: "Neck (PAN-FPN)", offset: 2.5, color: rgb("#73000A")),
-  (from: "head", to: "out", label: "Head", offset: 2.5, color: rgb("#73000A")),
+  (from: "hp3", to: "out", label: "Head", offset: 2.5, color: rgb("#73000A")),
 ), connections: (
   (from: "p4", to: "cat4", type: "skip", mode: "air", pos: 2.6),
   (from: "p3", to: "cat3", type: "skip", mode: "air", pos: 4.0),
   (from: "n4", to: "cat4b", type: "skip", mode: "flat", pos: 4.6),
   (from: "p5", to: "cat5", type: "skip", mode: "flat", pos: 6.2),
-  (from: "n3", to: "head", type: "skip", mode: "air", pos: 5.2, label: "P3"),
-  (from: "n4b", to: "head", type: "skip", mode: "air", pos: 2.0, label: "P4"),
+  (from: "n3", to: "hp3", type: "skip", mode: "air", pos: auto, label: "P3"),
+  (from: "n4b", to: "hp4", type: "skip", mode: "air", pos: auto, label: "P4"),
 ),
 show-legend: true,
 legend-title: "YOLO26-n",
