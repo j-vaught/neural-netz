@@ -2426,10 +2426,9 @@ canvas(length: 1cm * scale-factor, {
       } else if from-anchor-key in arrow-segments {
         anchored-heads.push(from-anchor-key)
         let seg = arrow-segments.at(from-anchor-key)
-        // Just behind the arrowhead rather than at its centre: the head is
-        // drawn about the midpoint, so attaching there runs the route through
-        // its waist instead of meeting the shaft at its tail.
-        (seg.mid.at(0) - arrow-config.triangle-size * 1.1, seg.mid.at(1))
+        // Slightly behind the arrowhead's centre, so the route enters the
+        // head's body just short of the notch rather than piercing its waist.
+        (seg.mid.at(0) - arrow-config.triangle-size * 0.2, seg.mid.at(1))
       } else {
         from-pos.anchors.true_east
       }
@@ -2486,8 +2485,8 @@ canvas(length: 1cm * scale-factor, {
       } else if to-anchor-key in arrow-segments {
         anchored-heads.push(to-anchor-key)
         let seg = arrow-segments.at(to-anchor-key)
-        // Behind the head, as for departures.
-        (seg.mid.at(0) - arrow-config.triangle-size * 1.1, seg.mid.at(1))
+        // Slightly behind the head centre, as for departures.
+        (seg.mid.at(0) - arrow-config.triangle-size * 0.2, seg.mid.at(1))
       } else {
         to-pos.anchors.true_west
       }
