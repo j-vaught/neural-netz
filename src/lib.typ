@@ -2426,8 +2426,10 @@ canvas(length: 1cm * scale-factor, {
       } else if from-anchor-key in arrow-segments {
         anchored-heads.push(from-anchor-key)
         let seg = arrow-segments.at(from-anchor-key)
-        // Use the arrow's actual start point for x (depth-adjusted)
-        (seg.mid.at(0), seg.mid.at(1))
+        // Just behind the arrowhead rather than at its centre: the head is
+        // drawn about the midpoint, so attaching there runs the route through
+        // its waist instead of meeting the shaft at its tail.
+        (seg.mid.at(0) - arrow-config.triangle-size * 1.1, seg.mid.at(1))
       } else {
         from-pos.anchors.true_east
       }
@@ -2484,8 +2486,8 @@ canvas(length: 1cm * scale-factor, {
       } else if to-anchor-key in arrow-segments {
         anchored-heads.push(to-anchor-key)
         let seg = arrow-segments.at(to-anchor-key)
-        // Use the arrow's midpoint (both x and y)
-        seg.mid
+        // Behind the head, as for departures.
+        (seg.mid.at(0) - arrow-config.triangle-size * 1.1, seg.mid.at(1))
       } else {
         to-pos.anchors.true_west
       }
