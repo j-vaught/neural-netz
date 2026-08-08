@@ -10,16 +10,30 @@ dependencies resolved so that a prerequisite always appears before anything that
 
 ## Status
 
+Released as 0.4.0. Each done item carries a `v0.4-tier*` tag.
+
 | Item | State |
 |---|---|
 | Step 0. Regression harness | done |
-| 1. Custom layer bandfill default | done, tag `v0.4-tier1.1` |
+| 1. Custom layer bandfill default | done |
 | 2. Label offsets, orientation and baseline anchoring | done |
-| 3. Export a shear helper | done |
-| 4. Connection z-order | next |
+| 3. Exported shear helpers | done |
+| 4. Connection z-order | implemented, reverted by preference |
+| 5. Per-connection stroke styling | done |
+| 6. Connection legend entries | done |
+| 7. Group brackets | done |
+| 8. Repeat notation | done |
+| 9. `arrive-offset`, manual and auto | done |
+| 10. `pos: auto` lane assignment | done, early |
+| 11. `shape:` auto-sizing | done |
+| 12. Trunk walker extraction | done |
+| 13. Parallel branches, vertical and depth modes | done |
+| 14. Junction dots on connections, crowding diagnostics | implemented, withdrawn on review |
+| 15. `offset: auto` | done, unplanned |
 
-Everything from Tier 1 item 3 onward is untouched. The palette overhaul is planned but
-deliberately out of scope for the items above.
+Not yet done, flagged along the way: `spread: auto` for branches, branch-aware label
+placement, the legend position on deep final layers, range-repeat, departure-side
+arrive-offset, and the palette overhaul.
 
 ## Governing rule
 
@@ -379,7 +393,21 @@ resolving that conflict twice.
 
 ## Tier 4 (continued)
 
-### 14. Junction points, and refusing to draw an impossible junction
+### 14. Junction points, and refusing to draw an impossible junction -- withdrawn
+
+**Do not build this without asking.** It was implemented once, working, and rolled back on
+request before commit: dots at every point a connection attaches to a main-axis arrow, plus
+a crowding check ringing an over-full arrival edge in red by default and panicking under
+`strict: true` with the layer name, the count, the capacity at `junction-sep` spacing, and
+the depth or height that would fit the fan. The strict message read, for example: 5 routes
+arrive on the top edge of "cat", which fits 1 at spacing 0.5; give it depth at least 7.07 or
+reduce the fan.
+
+The branch junction dots from item 13 are unaffected and remain: those mark a branch's own
+split and merge. What was withdrawn is extending that grammar to ordinary connections, and
+the crowding validation on top of it.
+
+Original proposal follows for context.
 
 Two related changes to how a connection meets the main axis.
 
