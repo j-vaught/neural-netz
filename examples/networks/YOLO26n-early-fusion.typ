@@ -27,7 +27,7 @@
     ((type: "input", image: "default", shape: (3, 640, 640), label: "RGB", channels: (3, 640), name: "rgb", label-orient: "horizontal"),),
     ((type: "input", image: image("bird-ir.jpg"), shape: (3, 640, 640), label: "IR ×3", channels: (3, 640), name: "ir", label-orient: "horizontal"),),
   )),
-  (type: "concat", shape: (6, 640, 640), name: "fcat", label: "concat", offset: auto, ..lbl),
+  (type: "concat", shape: (6, 640, 640), name: "fcat", label: "concat", offset: auto, label-dx: 0.7, ..lbl),
   (type: "custom", shape: (3, 640, 640), label: "1×1 mix", channels: (3, 640),
     fill: fusion-color, opacity: 0.9, legend: "Early fusion (1×1 mix)", name: "mix", offset: auto, ..lbl),
 

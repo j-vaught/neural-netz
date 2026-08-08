@@ -42,7 +42,7 @@
   )),
 
   // ---- Mid fusion: concat the two P3 maps, fold back to stock width ----
-  (type: "concat", shape: (256, 80, 80), name: "fcat", label: "concat", offset: auto, ..lbl),
+  (type: "concat", shape: (256, 80, 80), name: "fcat", label: "concat", offset: auto, label-dx: 0.7, ..lbl),
   (type: "custom", shape: (128, 80, 80), label: "1×1 fuse", channels: (128, 80),
     fill: fusion-color, opacity: 0.9, legend: "Mid fusion (1×1)", name: "f3", offset: auto, ..lbl),
 
