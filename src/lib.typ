@@ -2086,11 +2086,29 @@ canvas(length: 1cm * scale-factor, {
   // reads consistently, and a longer route arcs over a shorter one rather than
   // crossing it.
   let lane-clearance = 0.7   // from the tallest layer to the shortest route
-  let layer-index = (:)
-  for (i, l) in layers.enumerate() {
-    let n = l.at("name", default: none)
-    if n != none { layer-index.insert(n, i) }
+  // Positions along the trunk, for ranking routes by how far they reach.
+  //
+  // Layers inside a branch are indexed at the branch's own position: a branch
+  // occupies one slot on the trunk however deep it is, and a route reaching into
+  // one has travelled as far as the branch, not as far as some position within
+  // it. Without this a connection targeting a branch layer was not found at all,
+  // so it fell back to lane 0, and every such route shared one lane and drew on
+  // top of the others.
+  let collect-index(ls, base) = {
+    let m = (:)
+    for (i, l) in ls.enumerate() {
+      let at = if base == none { i } else { base }
+      let n = l.at("name", default: none)
+      if n != none { m.insert(n, at) }
+      if l.type == "branch" {
+        for sub in l.at("branches", default: ()) {
+          for (k, v) in collect-index(sub, at) { m.insert(k, v) }
+        }
+      }
+    }
+    m
   }
+  let layer-index = collect-index(layers, none)
   let auto-lane = (:)
   let entries = ()
   for (i, conn) in connections.enumerate() {
