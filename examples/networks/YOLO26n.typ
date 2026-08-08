@@ -22,6 +22,9 @@
 // route underneath it.
 
 #let sppf-color = rgb("#466A9F")
+#let lateral-color = rgb("#466A9F")
+#let pan-color = rgb("#A49137")
+#let head-feed-color = rgb("#1F414D")
 #let attn-color = rgb("#65780B")
 #let head-color = rgb("#CC2E40")
 
@@ -50,11 +53,11 @@
     fill: attn-color, opacity: 0.9, legend: "C2PSA (attention)", name: "p5", offset: auto, ..lbl),
 
   // ---- Top-down (FPN) ----
-  (type: "unpool", shape: (256, 40, 40), label: "up x2", name: "u4", offset: auto, ..lbl),
+  (type: "unpool", shape: (256, 40, 40), label: "upsample", name: "u4", offset: auto, label-orient: "horizontal", label-dx: 0.55),
   (type: "concat", shape: (384, 40, 40), name: "cat4", offset: auto),
   (type: "convres", shape: (128, 40, 40), label: "C3k2", channels: (128, 40), name: "n4", offset: auto, ..lbl),
 
-  (type: "unpool", shape: (128, 80, 80), label: "up x2", name: "u3", offset: auto, ..lbl),
+  (type: "unpool", shape: (128, 80, 80), label: "upsample", name: "u3", offset: auto, label-orient: "horizontal", label-dx: 0.55),
   (type: "concat", shape: (192, 80, 80), name: "cat3", offset: auto),
   (type: "convres", shape: (64, 80, 80), label: "C3k2", channels: (64, 80), name: "n3", offset: auto, ..lbl),
 
@@ -74,11 +77,11 @@
   // its level's resolution makes the P3 one tower over the figure.
   (type: "branch", spread: 7, lead: 3.0, spread-mode: "depth", branches: (
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P3", channels: (256, 80),
-      fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "hp3", ..lbl),),
+      fill: head-color, opacity: 0.9, show-relu: false, legend: "Detect (NMS-free)", name: "hp3", label-orient: "horizontal", label-dx: -0.8),),
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P4", channels: (256, 40),
-      fill: head-color, opacity: 0.9, show-relu: false, name: "hp4", ..lbl),),
+      fill: head-color, opacity: 0.9, show-relu: false, name: "hp4", label-orient: "horizontal", label-dx: -0.8),),
     ((type: "custom", width: 0.5, height: 2.6, depth: 1.4, label: "Detect P5", channels: (256, 20),
-      fill: head-color, opacity: 0.9, show-relu: false, name: "hp5", ..lbl),),
+      fill: head-color, opacity: 0.9, show-relu: false, name: "hp5", label-orient: "horizontal"),),
   )),
   (type: "output", label: "boxes + cls", height: 4, depth: 0.3, name: "out", offset: auto, ..lbl),
 ), groups: (
@@ -92,20 +95,21 @@
   (from: "sppf", to: "p5", label: "context"),
   (from: "u4", to: "n3", label: "top-down"),
   (from: "d4", to: "n5", label: "bottom-up"),
-  (from: "hp3", to: "out", label: "detect"),
+  (from: "hp5", to: "out", label: "detect"),
 
-  (from: "p1", to: "p5", label: "Backbone", offset: 2.5, color: rgb("#73000A")),
-  (from: "u4", to: "n5", label: "Neck (PAN-FPN)", offset: 2.5, color: rgb("#73000A")),
-  (from: "hp3", to: "out", label: "Head", offset: 2.5, color: rgb("#73000A")),
+  (from: "p1", to: "p5", label: "Backbone", offset: 2.5),
+  (from: "u4", to: "n5", label: "Neck (PAN-FPN)", offset: 2.5),
+  (from: "hp5", to: "out", label: "Head", offset: 2.5),
 ), connections: (
-  (from: "p4", to: "cat4", type: "skip", mode: "air", pos: 2.6),
-  (from: "p3", to: "cat3", type: "skip", mode: "air", pos: 4.0),
-  (from: "n4", to: "cat4b", type: "skip", mode: "flat", pos: 4.6),
-  (from: "p5", to: "cat5", type: "skip", mode: "flat", pos: 6.2),
-  (from: "n3", to: "hp3", type: "skip", mode: "air", pos: auto, label: "P3"),
-  (from: "n4b", to: "hp4", type: "skip", mode: "air", pos: auto, label: "P4"),
+  (from: "p4", to: "cat4", type: "skip", mode: "air", pos: 2.6, color: lateral-color, legend: "backbone feed"),
+  (from: "p3", to: "cat3", type: "skip", mode: "air", pos: 4.0, color: lateral-color),
+  (from: "n4", to: "cat4b", type: "skip", mode: "flat", pos: 4.6, color: pan-color, legend: "bottom-up feed"),
+  (from: "p5", to: "cat5", type: "skip", mode: "flat", pos: 6.2, color: pan-color),
+  (from: "n3", to: "hp3", type: "skip", mode: "air", pos: auto, label: "P3", color: head-feed-color, legend: "head feed"),
+  (from: "n4b", to: "hp4", type: "skip", mode: "air", pos: auto, label: "P4", color: head-feed-color),
 ),
 show-legend: true,
 legend-title: "YOLO26-n",
+main-legend: "forward pass",
 show-relu: true,
 )
