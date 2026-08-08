@@ -16,11 +16,13 @@ Visualize Neural Network Architectures in high-quality diagrams using [Typst](ht
 
 Under the hood, this package only uses the native Typst package [CeTZ](https://typst.app/universe/package/cetz/) for building the diagrams.
 
+> This is the [j-vaught fork](https://github.com/j-vaught/neural-netz), version 0.4, extending [Edgar Remy's neural-netz 0.3](https://github.com/edgaremy/neural-netz) with parallel branches, tensor-shape sizing, automatic spacing and lanes, group brackets, repeat notation, connection styling and more. See the [changelog](CHANGELOG.md) for the full list.
+
 ## Usage
 
 Simply import the all-in-one drawing function from the neural-netz package:
 ```typ
-#import "@preview/neural-netz:0.3.0": draw-network
+#import "@preview/neural-netz:0.4.0": draw-network
 ```
 You can then call `draw-network` which has the following arguments:
 ```typ
@@ -435,6 +437,12 @@ Here are a few network architectures implemented with neural-netz (more examples
 <img src="gallery/networks/FCN-8.png" alt="FCN-8 visualization" width="500"/>
 </p>
 <p style="text-align: center;"><a href="https://github.com/edgaremy/neural-netz/blob/741c71cd31d40161df44354fb65fbad7233a82aa/examples/networks/FCN-8.typ">code for this image</a></p>
+
+<h3 style="text-align: center;">YOLO26-n</h3>
+<p align="center">
+<img src="gallery/networks/YOLO26n.png" alt="YOLO26-n visualization" width="750"/>
+</p>
+<p style="text-align: center;"><a href="examples/networks/YOLO26n.typ">code for this image</a> — written entirely from tensor shapes and automatic spacing, with a depth-mode branch for the three detection heads</p>
 
 ## Cite this work
 If you use the neural-netz package for a scientific publication, you can [cite its initial publication on HAL](https://hal.science/hal-05401124), indicating current version as follows:

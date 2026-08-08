@@ -20,7 +20,7 @@
     "dateModified": "2025-12-04",
     "datePublished": "2025-12-02",
     "description": "A Typst package for visualizing Neural Network Architectures with high-quality diagrams.",
-    "downloadUrl": "https://github.com/edgaremy/neural-netz/releases/download/v0.3.0/neural-netz.0.3.0.zip",
+    "downloadUrl": "https://github.com/j-vaught/neural-netz/releases/download/v0.4.0/neural-netz.0.4.0.zip",
     "keywords": [
         "deep learning",
         "visualization",
@@ -32,6 +32,6 @@
     "programmingLanguage": "Typst",
     "relatedLink": "https://typst.app/universe/package/neural-netz",
     "releaseNotes": "- Added new generic custom layer type.\n- Improved smart legend generation\n- Fixed use of custom images in input layer and made it more robust to various image widths.\n- More detailed documentation in the README.\n- Minor fixes.\n",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "issueTracker": "https://github.com/edgaremy/neural-netz/issues"
 }
