@@ -693,6 +693,7 @@ canvas(length: 1cm * scale-factor, {
   // than emitted, so the caller decides where it goes.
   let walk-trunk(layers, start-x, arrow-axis-y) = {
     let x = start-x
+    let first-west = none
     let max-half-extent = 0
     let prev-layer-depth = 0
     // Layers a connection lands on, so `offset: auto` can leave them room.
@@ -737,7 +738,7 @@ canvas(length: 1cm * scale-factor, {
         if l.type == "branch" {
           let subs = l.at("branches", default: ())
           let spread = l.at("spread", default: 6)
-          let lead = l.at("lead", default: 1.2)
+          let lead = l.at("lead", default: 2.0)
           let n = subs.len()
           // The turn has to clear the preceding block's sheared face, not just
           // its front edge, or the vertical run is drawn across it.
@@ -768,15 +769,21 @@ canvas(length: 1cm * scale-factor, {
             // Anchored like the axis arrows: leaving from the previous block's
             // perspective centre rather than from the axis itself, which is only
             // the same point for a layer of zero depth.
-            let by = arrow-axis-y + dy
+            // Arrive where the branch's first block wants its arrow, which is
+            // that block's perspective centre, not the branch's axis. Those
+            // differ by half the block's depth offset, so aiming at the axis put
+            // the route across the block's face.
+            let (in-x, in-y) = if r.first-west == none {
+              (branch-start, arrow-axis-y + dy)
+            } else { r.first-west }
             let turn = turn-out
-            if dy == 0 {
-              draw-connection-path((((branch-from-x, branch-from-y), (branch-start, by)),), opacity: 0.7)
+            if calc.abs(in-y - branch-from-y) < 0.001 {
+              draw-connection-path((((branch-from-x, branch-from-y), (in-x, in-y)),), opacity: 0.7)
             } else {
               draw-connection-path((
                 ((branch-from-x, branch-from-y), (turn, branch-from-y)),
-                ((turn, branch-from-y), (turn, by)),
-                ((turn, by), (branch-start, by)),
+                ((turn, branch-from-y), (turn, in-y)),
+                ((turn, in-y), (in-x, in-y)),
               ), opacity: 0.7)
             }
             // Drawn after the route, so the blocks cover it the way a layer
@@ -814,6 +821,16 @@ canvas(length: 1cm * scale-factor, {
         }
 
         used-layer-types.insert(l.type, true)
+
+        // Where an arrow arriving at this run should land. Only the first layer
+        // needs it, and only a caller placing this run somewhere other than the
+        // main axis will ask.
+        if first-west == none {
+          let (f-ox, f-oy) = get-depth-offsets(l.at("depth", default: 5))
+          let f-h = l.at("height", default: 5)
+          let f-y = get-y-offset-for-center-on-axis(f-h, l.at("depth", default: 5), arrow-axis-y)
+          first-west = (x, get-perspective-center-y(f-y, f-h, f-oy))
+        }
     
         // Ensure height and depth are set for arrow calculation (using type-specific defaults)
         // A layer may state its tensor shape as (channels, height, width) and have
@@ -1989,6 +2006,7 @@ canvas(length: 1cm * scale-factor, {
       prev-x: prev-x,
       prev-depth-offset: prev-depth-offset,
       prev-center-y: prev-center-y,
+      first-west: first-west,
       end-x: x,
     )
   }
