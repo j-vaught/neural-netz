@@ -697,6 +697,7 @@ canvas(length: 1cm * scale-factor, {
   let walk-trunk(layers, start-x, arrow-axis-y) = {
     let x = start-x
     let first-west = none
+    let branch-extents = ()
     let max-half-extent = 0
     let prev-layer-depth = 0
     // Layers a connection lands on, so `offset: auto` can leave them room.
@@ -766,6 +767,7 @@ canvas(length: 1cm * scale-factor, {
           let branch-from-y = prev-center-y
           let branch-start = turn-out + lead / 2
           let ends = ()
+          let branch-members = ()
 
           // The outgoing spine, drawn once: the teeth into each branch leave
           // from points along it. It crosses the axis midway, so the flow reads
@@ -799,6 +801,8 @@ canvas(length: 1cm * scale-factor, {
 
             for (k, v) in r.positions { layer-positions.insert(k, v) }
             for (k, v) in r.segments { arrow-segments.insert(k, v) }
+            branch-members += r.positions.keys()
+            branch-extents += r.branch-extents
             for e in r.legend {
               if not legend-entries.any(q => q.key == e.key) { legend-entries.push(e) }
             }
@@ -932,6 +936,10 @@ canvas(length: 1cm * scale-factor, {
           // dot so the trunk arrow still originates there.
           x = if depth-spread and n > 1 { rturn0 + spread } else { dot-x }
           prev-x = dot-x
+          // The whole branch, plumbing included, as one span. A group naming any
+          // layer inside it widens to this, since a bracket under two of three
+          // parallel heads is not describing the thing it points at.
+          branch-extents.push((x0: turn-out, x1: x, members: branch-members))
           prev-depth-offset = 0
           prev-center-y = arrow-axis-y
           prev-pool-width = 0
@@ -2126,6 +2134,7 @@ canvas(length: 1cm * scale-factor, {
       prev-depth-offset: prev-depth-offset,
       prev-center-y: prev-center-y,
       first-west: first-west,
+      branch-extents: branch-extents,
       end-x: x,
     )
   }
@@ -2138,6 +2147,7 @@ canvas(length: 1cm * scale-factor, {
   let max-half-extent = trunk.max-half-extent
   let prev-x = trunk.prev-x
   let prev-depth-offset = trunk.prev-depth-offset
+  let branch-extents = trunk.branch-extents
   
   // After all layers are drawn, calculate arrow segment midpoints for ALL named layer pairs
   // This ensures skip connections between non-consecutive layers can find their anchor points
@@ -2561,6 +2571,15 @@ canvas(length: 1cm * scale-factor, {
       // isometric shear, not just the front faces.
       let x0 = calc.min(a.x, b.x) + group-inset
       let x1 = calc.max(a.x + a.w + a.ox, b.x + b.w + b.ox) - group-inset
+      // An endpoint inside a branch widens the span to the branch's whole
+      // drawn extent, plumbing included: a bracket under two of three parallel
+      // heads is not describing the thing it points at.
+      for be in branch-extents {
+        if f in be.members or t in be.members {
+          x0 = calc.min(x0, be.x0 + group-inset)
+          x1 = calc.max(x1, be.x1 - group-inset)
+        }
+      }
       let y = calc.min(arrow-axis-y - max-half-extent, lowest-route-y) - g.at("offset", default: 1.15)
       let paint = g.at("color", default: colors.connection)
       line((x0, y + group-tick), (x0, y), (x1, y), (x1, y + group-tick),

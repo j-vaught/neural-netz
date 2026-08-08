@@ -364,7 +364,7 @@ Each branch is a layer list of its own, walked at its own offset and rejoined af
 
 A filled dot marks each point where the flow divides or meets, and where a tooth leaves a spine that passes through. Merging routes terminate at the dot and a single arrow leaves it for the next block. Connections aimed at a branch's first layer land on its incoming tooth at the arrowhead, the same way a connection to a trunk layer lands on the axis arrow in front of it.
 
-The rejoin waits for the longest branch rather than cutting the others short. Named layers inside a branch join the same table the trunk uses, so connections, groups and `pos: auto` lane ranking all reach into branches. A branch may contain branches.
+The rejoin waits for the longest branch rather than cutting the others short. Named layers inside a branch join the same table the trunk uses, so connections, groups and `pos: auto` lane ranking all reach into branches, and a group naming any layer inside a branch widens to the branch's whole drawn extent, plumbing included. A branch may contain branches.
 
 ### Predefined layer types
 
