@@ -726,6 +726,56 @@ canvas(length: 1cm * scale-factor, {
 
     let body = {
       for (i, l) in layers.enumerate() {
+        // A parallel section: each branch is a layer list of its own, walked at
+        // its own height and rejoined afterwards.
+        //
+        // draw-network advances one cursor along one axis, so anything genuinely
+        // parallel had to be collapsed into a single block with arrows pointed at
+        // it. Walking a branch is the same operation as walking the trunk, only
+        // starting somewhere else, which is what extracting walk-trunk made
+        // expressible. The call is recursive, so a branch may contain branches.
+        if l.type == "branch" {
+          let subs = l.at("branches", default: ())
+          let spread = l.at("spread", default: 6)
+          let lead = l.at("lead", default: 1.2)
+          let n = subs.len()
+          let branch-start = x + lead
+          let ends = ()
+
+          for (bi, sub) in subs.enumerate() {
+            // Centred on the trunk, first branch highest.
+            let dy = if n <= 1 { 0 } else { spread * ((n - 1) / 2 - bi) / (n - 1) }
+            let r = walk-trunk(sub, branch-start, arrow-axis-y + dy)
+            r.body
+
+            for (k, v) in r.positions { layer-positions.insert(k, v) }
+            for (k, v) in r.segments { arrow-segments.insert(k, v) }
+            for e in r.legend {
+              if not legend-entries.any(q => q.key == e.key) { legend-entries.push(e) }
+            }
+            // A branch sits off-axis, so its reach from the trunk is its own
+            // reach plus however far it was displaced.
+            max-half-extent = calc.max(max-half-extent, r.max-half-extent + calc.abs(dy))
+
+            draw-segment-with-arrow(x, arrow-axis-y, branch-start, arrow-axis-y + dy)
+            ends.push((x: r.prev-x + r.prev-depth-offset, y: arrow-axis-y + dy, end: r.end-x))
+          }
+
+          // Rejoin where the longest branch finishes, so none is cut short.
+          let resume = ends.map(e => e.end).fold(x, calc.max) + lead
+          for e in ends {
+            draw-segment-with-arrow(e.x, e.y, resume, arrow-axis-y)
+          }
+
+          x = resume
+          prev-x = resume
+          prev-depth-offset = 0
+          prev-center-y = arrow-axis-y
+          prev-pool-width = 0
+          prev-layer-depth = 0
+          continue
+        }
+
         used-layer-types.insert(l.type, true)
     
         // Ensure height and depth are set for arrow calculation (using type-specific defaults)

@@ -341,6 +341,25 @@ Working the same thing out in a figure means restating the size pyramid twice, o
 
 Set the white space with `auto-gap` on `draw-network`.
 
+### Parallel branches
+
+`draw-network` advances one cursor along one axis, so anything genuinely parallel — three detection heads, the two paths inside a CSP block, a two-stream fusion — had to be collapsed into a single block with arrows pointed at it. A `branch` entry draws it as it is:
+
+```typ
+#draw-network((
+  (type: "input", label: "in", show-connection: true),
+  (type: "branch", spread: 6, branches: (
+    ((type: "conv", label: "a"),),
+    ((type: "conv", label: "b"),),
+  )),
+  (type: "concat", label: "concat"),
+))
+```
+
+Each branch is a layer list of its own, walked at its own height and rejoined afterwards. `spread` sets the vertical separation, centred on the trunk with the first branch highest, and `lead` how far the fan-out and rejoin arrows run.
+
+The rejoin waits for the longest branch rather than cutting the others short. Named layers inside a branch join the same table the trunk uses, so connections and groups can reference them. A branch may contain branches.
+
 ### Predefined layer types
 
 Here is a visualization of all the predefined layer types, in both color palettes available (`"warm"` (default) and `"cold"`). You can find their associated name underneath each layer. Of course, this is just a starting point, you can modify most of their default attributes.
