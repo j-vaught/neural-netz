@@ -408,6 +408,23 @@ Depends on item 9 for named anchors, since several routes meeting one junction n
 arrival points, and shares machinery with item 10's lane packing, which already computes
 which connections compete for the same span.
 
+### 15. `offset: auto`
+
+Not originally planned. It came out of converting the YOLO example to `shape`: with sizes
+derived, the figure still had to compute its own offsets, which meant exporting the sizing
+mapping so a figure could restate it. That was the wrong shape of fix. Both inputs to the
+spacing rule are already known inside `draw-network`, the previous layer's depth and whether
+the connection list names a layer as a target, so the figure should not be computing either.
+
+The example lost its entire spacing preamble, six size constants and two helper functions,
+and with it the hazard that the pyramid was written down twice with nothing to catch the two
+copies drifting apart.
+
+Pool and unpool needed separate handling: they position themselves from their own offset
+rather than from the layout cursor, in three places, so `auto` is resolved for them too
+rather than being treated as unset. Treating it as unset collapsed them onto their
+neighbours.
+
 ## Deliberate default changes
 
 These intentionally break pixel compatibility with v0.3 and required a full re-baseline.

@@ -34,6 +34,7 @@
   depth-multiplier: 0.3,
   lane-unit: 0.75,
   shape-scale: (spatial: (1.2, -3.2), channels: (0.075, 0.0)),
+  auto-gap: 0.55,
   show-relu: false,
 ) = {
 
@@ -681,6 +682,9 @@ canvas(length: 1cm * scale-factor, {
   let x = 0
   let arrow-axis-y = arrow-config.axis-y
   let max-half-extent = 0
+  let prev-layer-depth = 0
+  // Layers a connection lands on, so `offset: auto` can leave them room.
+  let connection-targets = connections.map(c => c.at("to", default: none)).filter(n => n != none)
   let prev-center-y = arrow-axis-y
   let prev-x = 0
   let prev-depth-offset = 0
@@ -764,15 +768,36 @@ canvas(length: 1cm * scale-factor, {
     let (_, l-oy) = get-depth-offsets(l.depth)
     max-half-extent = calc.max(max-half-extent, l.height / 2 + l-oy / 2)
     
+    // `offset: auto` leaves the spacing to the drawing rather than to the author.
+    //
+    // The offset has to cover the previous layer's isometric lean before it buys
+    // any visible space at all, and a gap a connection descends into has to be
+    // wider still or the route arrives inside that layer's sheared top face.
+    // Both are computable here: the previous depth is known, and the connection
+    // list says whether anything lands in this gap. A figure that works them out
+    // for itself ends up restating the size pyramid twice, once in the layers
+    // and once in the offsets, with nothing to catch them drifting apart.
+    let auto-offset = {
+      let base = depth-shear(prev-layer-depth, depth-multiplier: depth-multiplier) + auto-gap
+      if l.at("name", default: none) in connection-targets {
+        calc.max(base, min-clear-offset(prev-layer-depth, depth-multiplier: depth-multiplier))
+      } else {
+        base
+      }
+    }
     let gap = if i == 0 {
       0
     } else if l.type == "pool" or l.type == "unpool" {
+      // These position themselves against the block they attach to, further down.
       0
     } else {
-      l.at("offset", default: 1.2)
+      let stated = l.at("offset", default: 1.2)
+      if stated == auto { auto-offset } else { stated }
     }
     
     x += gap
+    // Only after the gap is resolved, so it still refers to the layer before.
+    prev-layer-depth = l.depth
     
     // Calculate and store arrow segment positions for ALL layers (for skip connections)
     // Only draw arrows if previous layer has show-connection enabled (controls outgoing arrows)
@@ -800,7 +825,8 @@ canvas(length: 1cm * scale-factor, {
         } else {
           // For pool/unpool with offset, calculate actual layer position first
           let is-curr-pool-or-unpool = l.type == "pool" or l.type == "unpool"
-          let curr-offset = if is-curr-pool-or-unpool { l.at("offset", default: none) } else { none }
+          let stated-offset = { let o = l.at("offset", default: none); if o == auto { auto-offset } else { o } }
+          let curr-offset = if is-curr-pool-or-unpool { stated-offset } else { none }
           let curr-layer-x = if curr-offset != none { x + curr-offset } else if is-curr-pool-or-unpool { x + prev-depth-offset / 2 - curr-ox / 2 } else { x }
           curr-layer-x + curr-depth-offset / 2
         }
@@ -1315,7 +1341,9 @@ canvas(length: 1cm * scale-factor, {
       let label = l.at("label", default: none)
       let channels = l.at("channels", default: none)
       let img = l.at("image", default: none)
-      let layer-offset = l.at("offset", default: none)
+      // pool and unpool position themselves from their own offset rather than
+      // from the loop's gap, so `auto` is resolved here instead.
+      let layer-offset = { let o = l.at("offset", default: none); if o == auto { auto-offset } else { o } }
       let (ox, oy) = get-depth-offsets(d)
       let y-offset = prev-center-y - h / 2 - oy / 2
       let pool-x = if layer-offset != none { x + layer-offset } else { x + prev-depth-offset / 2 - ox / 2 }
@@ -1384,7 +1412,9 @@ canvas(length: 1cm * scale-factor, {
       let label = l.at("label", default: none)
       let channels = l.at("channels", default: none)
       let img = l.at("image", default: none)
-      let layer-offset = l.at("offset", default: none)
+      // pool and unpool position themselves from their own offset rather than
+      // from the loop's gap, so `auto` is resolved here instead.
+      let layer-offset = { let o = l.at("offset", default: none); if o == auto { auto-offset } else { o } }
       let (ox, oy) = get-depth-offsets(d)
       let y-offset = prev-center-y - h / 2 - oy / 2
       let unpool-x = if layer-offset != none { x + layer-offset } else { x + prev-depth-offset / 2 - ox / 2 }

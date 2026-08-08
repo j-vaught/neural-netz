@@ -37,6 +37,7 @@ You can then call `draw-network` which has the following arguments:
   depth-multiplier: 0.3,
   lane-unit: 0.75,
   shape-scale: (spatial: (1.2, -3.2), channels: (0.075, 0.0)),
+  auto-gap: 0.55,
   show-relu: false,
 )
 ```
@@ -325,6 +326,20 @@ Linear spatial extent does not work. Across a 640-to-20 pyramid it puts the smal
 The constants are absolute rather than normalised across a figure, so the same shape gives the same size everywhere and two figures stay comparable. Change them with `shape-scale` on `draw-network`, which takes `(spatial: (slope, intercept), channels: (slope, intercept))` applied to the base-2 logarithm. Derived sizes are floored so a very small extent still draws.
 
 Only `conv`, `convres` and `custom` take a derived width, since their thickness means channel count. Other types have a fixed thickness that says something else, and keep it.
+
+### Spacing layers automatically
+
+`offset: auto` leaves the spacing to the drawing:
+
+```typ
+(type: "conv", shape: (128, 40, 40), offset: auto)
+```
+
+It covers the previous layer's isometric lean, adds a constant strip of white space, and widens to `min-clear-offset` where a connection descends into that gap. Both inputs are already known at that point: the previous depth, and whether the connection list names this layer as a target.
+
+Working the same thing out in a figure means restating the size pyramid twice, once in the layers and once in the offsets, with nothing to catch them drifting apart. `depth-shear` and `min-clear-offset` stay exported for anything unusual, but ordinary spacing does not need them.
+
+Set the white space with `auto-gap` on `draw-network`.
 
 ### Predefined layer types
 
