@@ -364,6 +364,17 @@ Each branch is a layer list of its own, walked at its own offset and rejoined af
 
 A filled dot marks each point where the flow divides or meets, and where a tooth leaves a spine that passes through. Merging routes terminate at the dot and a single arrow leaves it for the next block. Connections aimed at a branch's first layer land on its incoming tooth at the arrowhead, the same way a connection to a trunk layer lands on the axis arrow in front of it.
 
+A branch may be **open at one end**. `open: "start"` draws no fan-out, so the branches simply begin — a branch with nothing before it is open at the start by definition, which is how a multi-input network starts. `open: "end"` draws no rejoin, so one trunk fans out into independent outputs:
+
+```typ
+(type: "branch", spread: 6, open: "end", branches: (
+  ((type: "conv", label: "task a"), (type: "output", label: "out a")),
+  ((type: "conv", label: "task b"), (type: "output", label: "out b")),
+))
+```
+
+The bundled `YOLO26n-early/mid/late-fusion` examples use the open start for their two-sensor inputs.
+
 The rejoin waits for the longest branch rather than cutting the others short. Named layers inside a branch join the same table the trunk uses, so connections, groups and `pos: auto` lane ranking all reach into branches, and a group naming any layer inside a branch widens to the branch's whole drawn extent, plumbing included. A branch may contain branches.
 
 ### Predefined layer types

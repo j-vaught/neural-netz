@@ -95,3 +95,36 @@
   )),
   out,
 ))
+
+#v(8mm)
+
+// ---- open ends: a branch need not close both sides into the trunk ----
+//
+// A branch with nothing before it is open at the start by definition: the
+// branches simply begin, which is how a multi-input network starts. open: "end"
+// leaves the other side loose instead, so one trunk fans out into independent
+// outputs and nothing merges.
+#draw-network((
+  inp,
+  blk("shared"),
+  (type: "branch", spread: 6, open: "end", branches: (
+    (blk("task a"), (type: "output", label: "out a", height: 2, depth: 0.3, offset: 1.2)),
+    (blk("task b"), (type: "output", label: "out b", height: 2, depth: 0.3, offset: 1.2)),
+  )),
+))
+
+#v(8mm)
+
+// Both at once: two inputs converge, one trunk, two outputs.
+#draw-network((
+  (type: "branch", spread: 6, branches: (
+    ((type: "input", height: 2.6, depth: 2.6, label: "sensor a", show-connection: true),),
+    ((type: "input", height: 2.6, depth: 2.6, label: "sensor b", show-connection: true),),
+  )),
+  (type: "concat", height: 2.8, depth: 2.8, label: "fuse", offset: 1.6),
+  blk("shared"),
+  (type: "branch", spread: 6, open: "end", branches: (
+    (blk("boxes"),),
+    (blk("classes"),),
+  )),
+))

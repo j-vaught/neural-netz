@@ -747,6 +747,15 @@ canvas(length: 1cm * scale-factor, {
           // the return spine descends past each block's lower-right corner,
           // which is where the diagonal dimension labels sit.
           let rejoin-lead = l.at("rejoin-lead", default: lead)
+          // A branch may be open at one end: "start" draws no fan-out, so the
+          // branches simply begin, which is how a multi-input network starts;
+          // "end" draws no rejoin, so each branch runs off to its own output.
+          // A branch with nothing before it is open at the start by definition.
+          let open-mode = l.at("open", default: none)
+          if open-mode not in (none, "start", "end") {
+            panic("branch open must be \"start\" or \"end\"; got " + repr(open-mode))
+          }
+          if i == 0 { open-mode = "start" }
           let n = subs.len()
           // "depth" stacks the branches along the projection's own axis rather
           // than straight up: the front branch stays on the trunk line and the
@@ -765,7 +774,7 @@ canvas(length: 1cm * scale-factor, {
           // so a branch read as detached where an ordinary layer reads as joined.
           let branch-from-x = prev-x + prev-pool-width + prev-depth-offset / 2
           let branch-from-y = prev-center-y
-          let branch-start = turn-out + lead / 2
+          let branch-start = if open-mode == "start" { x } else { turn-out + lead / 2 }
           let ends = ()
           let branch-members = ()
 
@@ -779,7 +788,7 @@ canvas(length: 1cm * scale-factor, {
           // points, so without a marker the crossing reads as incidental overlap
           // rather than as a junction.
           let junction(px, py) = circle((px, py), radius: 0.09, fill: colors.connection, stroke: none)
-          if depth-spread and n > 1 {
+          if depth-spread and n > 1 and open-mode != "start" {
             draw-connection-path((((branch-from-x, branch-from-y), (spine-cross, branch-from-y)),), opacity: 0.7)
             draw-connection-path((((spine-cross, branch-from-y), (turn-out + spread, branch-from-y + spread / 2)),), opacity: 0.7)
             draw-connection-path((((spine-cross, branch-from-y), (turn-out, branch-from-y - spread / 2)),), opacity: 0.7)
@@ -818,7 +827,9 @@ canvas(length: 1cm * scale-factor, {
               (branch-start + dx, arrow-axis-y + dy)
             } else { r.first-west }
             let turn = turn-out
-            if depth-spread {
+            if open-mode == "start" {
+              // Open start: the branch simply begins, the way a trunk does.
+            } else if depth-spread {
               // A horizontal tooth from the spine into the branch. The front
               // branch is on the trunk line, so its tooth is the trunk's own
               // continuation from the block it left.
@@ -856,7 +867,7 @@ canvas(length: 1cm * scale-factor, {
             // the axis arrow in front of it, instead of falling back to a point
             // half a depth inside the block.
             let first-name = if sub.len() > 0 { sub.first().at("name", default: none) } else { none }
-            if first-name != none and first-name + "-in" not in arrow-segments {
+            if open-mode != "start" and first-name != none and first-name + "-in" not in arrow-segments {
               let tooth-start-x = if depth-spread {
                 if n <= 1 { branch-from-x } else { turn + dx }
               } else {
@@ -879,7 +890,9 @@ canvas(length: 1cm * scale-factor, {
           } else {
             ends.map(e => e.x + e.shear).fold(x, calc.max) + rejoin-lead
           }
-          if depth-spread {
+          if open-mode == "end" {
+            // Open end: each branch runs off to its own output; nothing merges.
+          } else if depth-spread {
             // The incoming spine mirrors the outgoing one: exits run onto it
             // horizontally, the away half comes forward and the near half rises,
             // meeting on the axis and continuing to the resume point.
@@ -935,7 +948,7 @@ canvas(length: 1cm * scale-factor, {
           // the next block clears the parallelogram, while prev-x stays at the
           // dot so the trunk arrow still originates there.
           x = if depth-spread and n > 1 { rturn0 + spread } else { dot-x }
-          prev-x = dot-x
+          prev-x = if open-mode == "end" { x } else { dot-x }
           // The whole branch, plumbing included, as one span. A group naming any
           // layer inside it widens to this, since a bracket under two of three
           // parallel heads is not describing the thing it points at.
