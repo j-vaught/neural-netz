@@ -743,7 +743,11 @@ canvas(length: 1cm * scale-factor, {
           // The turn has to clear the preceding block's sheared face, not just
           // its front edge, or the vertical run is drawn across it.
           let turn-out = calc.max(x + lead / 2, prev-x + prev-depth-offset + 0.15)
-          let branch-from-x = prev-x + prev-depth-offset
+          // Both ends sit half a depth inside the block, which is where the axis
+          // arrows start and finish. Using the outer edges instead made the route
+          // stop dead at the face rather than running under it and being covered,
+          // so a branch read as detached where an ordinary layer reads as joined.
+          let branch-from-x = prev-x + prev-pool-width + prev-depth-offset / 2
           let branch-from-y = prev-center-y
           let branch-start = turn-out + lead / 2
           let ends = ()
@@ -789,13 +793,13 @@ canvas(length: 1cm * scale-factor, {
             // Drawn after the route, so the blocks cover it the way a layer
             // covers the arrow arriving at it.
             r.body
-            ends.push((x: r.prev-x + r.prev-depth-offset, y: r.prev-center-y, dy: dy, end: r.end-x))
+            ends.push((x: r.prev-x + r.prev-depth-offset / 2, shear: r.prev-depth-offset / 2, y: r.prev-center-y, dy: dy, end: r.end-x))
           }
 
           // Rejoin where the longest branch finishes, so none is cut short.
           // Measured from the sheared right edge of each branch's last block, so
           // the rejoin turns clear of them too.
-          let resume = ends.map(e => e.x).fold(x, calc.max) + lead
+          let resume = ends.map(e => e.x + e.shear).fold(x, calc.max) + lead
           for e in ends {
             let turn = resume - lead / 2
             if e.dy == 0 {
@@ -829,7 +833,7 @@ canvas(length: 1cm * scale-factor, {
           let (f-ox, f-oy) = get-depth-offsets(l.at("depth", default: 5))
           let f-h = l.at("height", default: 5)
           let f-y = get-y-offset-for-center-on-axis(f-h, l.at("depth", default: 5), arrow-axis-y)
-          first-west = (x, get-perspective-center-y(f-y, f-h, f-oy))
+          first-west = (x + f-ox / 2, get-perspective-center-y(f-y, f-h, f-oy))
         }
     
         // Ensure height and depth are set for arrow calculation (using type-specific defaults)
