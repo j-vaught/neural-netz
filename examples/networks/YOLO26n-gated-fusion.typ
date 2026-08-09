@@ -58,7 +58,13 @@
 
 #draw-network((
   // ---- Two modality-specific half-backbones, with the gate between them ----
-  (type: "branch", spread: 15, lead: 2.5, rejoin-lead: 3.4, branches: (
+  //
+  // The spread is set by the labels, not by the blocks. Three streams whose
+  // outer two open on a full-resolution input image leave the middle one very
+  // little room, and the first thing to collide is not a block but the text
+  // under one: the RGB stem's own label lands on the gate's input image, and the
+  // gate's first label lands on the thermal one.
+  (type: "branch", spread: 18, lead: 2.5, rejoin-lead: 3.4, branches: (
     stream("r-", "default", "RGB"),
     gate,
     stream("i-", image("bird-ir.jpg"), "IR ×3"),
@@ -91,7 +97,7 @@
 
   // ---- Bottom-up (PAN) ----
   (type: "conv", shape: (64, 40, 40), label: "down", channels: (64, 40), name: "d4", offset: auto, ..lbl),
-  (type: "concat", shape: (192, 40, 40), name: "cat4b", label: "concat", offset: auto, ..lbl),
+  (type: "concat", shape: (192, 40, 40), name: "cat4b", label: "concat", offset: auto, label-dx: 0.5, ..lbl),
   (type: "convres", shape: (128, 40, 40), label: "C3k2", channels: (128, 40), name: "n4b", offset: auto, ..lbl),
 
   (type: "conv", shape: (128, 20, 20), label: "down", channels: (128, 20), name: "d5", offset: auto, ..lbl),

@@ -62,7 +62,7 @@
   (type: "convres", shape: (64, 80, 80), label: "C3k2", channels: (64, 80), name: p + "n3", offset: auto, ..lbl),
 
   (type: "conv", shape: (64, 40, 40), label: "down", channels: (64, 40), name: p + "d4", offset: auto, ..lbl),
-  (type: "concat", shape: (192, 40, 40), name: p + "cat4b", label: "concat", offset: auto, ..lbl),
+  (type: "concat", shape: (192, 40, 40), name: p + "cat4b", label: "concat", offset: auto, label-dx: 0.5, ..lbl),
   (type: "convres", shape: (128, 40, 40), label: "C3k2", channels: (128, 40), name: p + "n4b", offset: auto, ..lbl),
 
   (type: "conv", shape: (128, 20, 20), label: "down", channels: (128, 20), name: p + "d5", offset: auto, ..lbl),
