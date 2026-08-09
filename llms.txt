@@ -255,6 +255,49 @@ Every example below compiles as written, given the import above.
   conv(label: "b"),
 ))
 
+### The two forms mix
+
+// The two forms mix freely
+#draw-network((
+  conv(label: "ctor"),
+  (type: "conv", label: "dict"),
+  conv(label: "ctor"),
+))
+
+### Names, connections and groups
+
+#draw-network(
+  (
+    conv(name: "a", label: "a"),
+    conv(name: "b", label: "b"),
+    conv(name: "c", label: "c"),
+  ),
+  // names are how connections and groups find a layer
+  connections: ((from: "a", to: "c"),),
+  groups: ((from: "a", to: "b", label: "pair"),),
+)
+
+### Sharing options across layers
+
+// Options shared by many layers, spread into each
+#let big = (height: 6, depth: 6, widths: (0.5,))
+
+#draw-network((
+  conv(label: "a", ..big),
+  conv(label: "b", ..big),
+  conv(label: "c", ..big),
+))
+
+### Generating layers
+
+// A layer list is an array, so build it however you like
+#let stage(n) = conv(
+  label: "stage " + str(n),
+  shape: (32 * n, 128 / n, 128 / n),
+)
+
+#draw-network(range(1, 5).map(stage))
+
 ### The predefined types
 
 #draw-network((
@@ -266,16 +309,47 @@ Every example below compiles as written, given the import above.
   fc(label: "fc"),
   sum(),
   softmax(label: "softmax"),
-  output(label: "output"),
+  output(label: "output", offset: 2),
 ))
+
+### conv, convres and custom
+
+#draw-network(
+  (
+    conv(label: "conv", widths: (0.5,)),
+    convres(label: "convres", widths: (0.5,)),
+    custom(label: "custom", width: 0.5),
+  ),
+  show-legend: true,
+)
 
 ### Pooling attaches to the block before it
 
+// No offset: the pool sits against the block in front
 #draw-network((
   conv(label: "conv"),
-  pool(),              // attaches to the block before
-  conv(label: "conv", offset: 2),
-  pool(offset: 1.5),   // an offset detaches it
+  pool(),
+  conv(label: "conv"),
+  pool(),
+))
+
+### An offset detaches a pool
+
+// An offset detaches it and draws an arrow
+#draw-network((
+  conv(label: "conv"),
+  pool(offset: 1.5),
+  conv(label: "conv"),
+))
+
+### Pool down, unpool up
+
+#draw-network((
+  conv(label: "down", height: 6, depth: 6),
+  pool(height: 4, depth: 4),
+  conv(label: "mid", height: 3.5, depth: 3.5),
+  unpool(height: 4, depth: 4, offset: 1.5),
+  deconv(label: "up", height: 6, depth: 6),
 ))
 
 ### Sum nodes
@@ -283,24 +357,93 @@ Every example below compiles as written, given the import above.
 #draw-network((
   conv(),
   sum(),
-  sum(symbol: [$times$], radius: 0.5),
+  sum(symbol: [$times$]),
+  sum(radius: 0.6, fill: rgb("#FFF2E3"), stroke: rgb("#73000A")),
   conv(),
 ))
 
-### Sizing by hand
+### Global pooling and concatenation
 
 #draw-network((
-  conv(label: "tall", height: 7, depth: 3),
-  conv(label: "deep", height: 3, depth: 7),
-  conv(label: "thick", widths: (1.6,)),
+  conv(label: "features", height: 5, depth: 5),
+  gap(label: "gap"),
+  concat(label: "concat"),
+  fc(label: "fc", channels: (512,)),
+))
+
+### Classifier heads
+
+#draw-network(
+  (
+    conv(label: "features"),
+    fc(label: "fc", channels: (4096,), depth: 0),
+    softmax(label: "softmax"),
+    output(label: "output", offset: 2),
+  ),
+  show-legend: true,
+)
+
+### The input layer
+
+#draw-network((
+  input(label: "plane"),
+  input(label: "with depth", depth: 4, width: 0.3, offset: 2),
+))
+
+### A classifier from types alone
+
+// A whole small classifier, using nothing but types and labels
+#draw-network(
+  (
+    input(image: "default", label: "image", channels: (3, 224)),
+    conv(label: "conv1", channels: (64,), offset: 1.4),
+    pool(),
+    conv(label: "conv2", channels: (128,)),
+    pool(),
+    gap(label: "gap"),
+    fc(label: "fc", channels: (1000,), depth: 0),
+    softmax(label: "softmax"),
+  ),
+  show-legend: true,
+)
+
+### height
+
+#draw-network((
+  conv(label: "3", height: 3),
+  conv(label: "5", height: 5),
+  conv(label: "8", height: 8),
+))
+
+### depth
+
+#draw-network((
+  conv(label: "1", depth: 1),
+  conv(label: "4", depth: 4),
+  conv(label: "8", depth: 8),
+))
+
+### Thickness
+
+#draw-network((
+  conv(label: "0.2", widths: (0.2,)),
+  conv(label: "0.8", widths: (0.8,)),
+  conv(label: "2.0", widths: (2.0,)),
 ))
 
 ### Several bands in one block
 
 #draw-network((
-  conv(label: "one", widths: (0.8,)),
-  conv(label: "three", widths: (0.4, 0.4, 0.4)),
-  conv(label: "uneven", widths: (0.2, 0.8, 0.2)),
+  conv(label: "x1", widths: (0.4,)),
+  conv(label: "x2", widths: (0.4, 0.4)),
+  conv(label: "x3", widths: (0.4, 0.4, 0.4)),
+))
+
+### Uneven bands (a bottleneck)
+
+// Bands need not be equal
+#draw-network((
+  conv(label: "bottleneck", widths: (0.7, 0.2, 0.7)),
 ))
 
 ### A flat layer
@@ -310,9 +453,16 @@ Every example below compiles as written, given the import above.
   fc(label: "2D", depth: 0),
 ))
 
-### Sizing from tensor shapes
+### Sizing from a tensor shape
 
-// (channels, height, width) of the tensor this layer produces
+// (channels, height, width) of the tensor produced
+#draw-network((
+  conv(shape: (64, 128, 128), label: "64x128"),
+  conv(shape: (256, 32, 32), label: "256x32"),
+))
+
+### A shape pyramid
+
 #draw-network((
   conv(shape: (64, 128, 128), channels: (64, 128)),
   conv(shape: (128, 64, 64), channels: (128, 64)),
@@ -331,13 +481,42 @@ Every example below compiles as written, given the import above.
   ),
 ))
 
+### Changing the shape mapping
+
+// Steeper: same shapes, more separation between them
+#draw-network(
+  (conv(shape: (64, 128, 128)), conv(shape: (256, 32, 32))),
+  shape-scale: (
+    spatial: (2.0, -6.0),
+    channels: (0.15, 0.0),
+  ),
+)
+
 ### Automatic spacing (the default)
 
-// No offsets stated
+// No offsets stated anywhere
 #draw-network((
   conv(shape: (64, 128, 128)),
   conv(shape: (128, 64, 64)),
   conv(shape: (256, 32, 32)),
+))
+
+### WRONG: a constant offset narrower than the lean
+
+// A fixed offset narrower than the block's own lean
+#draw-network((
+  conv(height: 7, depth: 7),
+  conv(height: 7, depth: 7, offset: 1.2),
+  conv(height: 7, depth: 7, offset: 1.2),
+))
+
+### RIGHT: the same blocks spaced automatically
+
+// The same blocks, spaced automatically
+#draw-network((
+  conv(height: 7, depth: 7),
+  conv(height: 7, depth: 7),
+  conv(height: 7, depth: 7),
 ))
 
 ### Spacing by hand
@@ -348,6 +527,29 @@ Every example below compiles as written, given the import above.
   conv(depth: 4, offset: 3.5),
 ))
 
+### A gap widening for a descending route
+
+// The gap before "c" widens on its own to let the route down
+#draw-network(
+  (
+    conv(name: "a", label: "a", depth: 6),
+    conv(name: "b", label: "b", depth: 6),
+    conv(name: "c", label: "c", depth: 6),
+  ),
+  connections: ((from: "a", to: "c"),),
+)
+
+### auto-gap
+
+#draw-network(
+  (
+    conv(shape: (64, 128, 128)),
+    conv(shape: (128, 64, 64)),
+    conv(shape: (256, 32, 32)),
+  ),
+  auto-gap: 2.0,
+)
+
 ### Labels
 
 #draw-network((
@@ -355,22 +557,116 @@ Every example below compiles as written, given the import above.
   conv(label: "another"),
 ))
 
-### Channel numbers and the axis label
+### Multi-line labels
 
 #draw-network((
-  // one number per band
-  conv(channels: (64,)),
-  conv(channels: (128, 256), widths: (0.4, 0.4)),
-  // one extra: the diagonal axis label
-  conv(channels: (512, 32)),
+  conv(label: [conv 3x3 \ stride 2]),
+  conv(label: [conv 1x1]),
 ))
 
-### Rotating labels to clear a crowded row
+### Channel numbers, one per band
+
+// one number per band
+#draw-network((
+  conv(channels: (64,)),
+  conv(channels: (128, 256), widths: (0.4, 0.4)),
+))
+
+### The extra entry is the axis label
+
+// one more than there are bands: the extra is the axis
+#draw-network((
+  conv(channels: (64, 128)),
+  conv(channels: (128, 64)),
+  conv(channels: (256, 32)),
+))
+
+### Strings as channel labels
+
+// Strings work, and an empty one labels only the axis
+#draw-network((
+  conv(channels: ("", "1/8")),
+  conv(channels: ("K", "1/16")),
+))
+
+### Axis names
 
 #draw-network((
-  conv(label: "horizontal", height: 3, depth: 3, widths: (0.3,)),
-  conv(label: "diagonal", height: 3, depth: 3, widths: (0.3,), label-orient: "diagonal"),
-  conv(label: "vertical", height: 3, depth: 3, widths: (0.3,), label-orient: "vertical"),
+  conv(
+    xlabel: "x", ylabel: "y", zlabel: "z",
+    widths: (0.8,),
+  ),
+))
+
+### Labelling the arrow between blocks
+
+#draw-network((
+  conv(label: "a", connection-label: "stride 2"),
+  conv(label: "b", offset: 3),
+))
+
+### WRONG: labels colliding
+
+// Long labels, blocks close together
+#let b = (height: 3, depth: 3, widths: (0.3,), offset: 0.6)
+#draw-network((
+  conv(label: "convolution", ..b),
+  conv(label: "downsample", ..b),
+  conv(label: "projection", ..b),
+))
+
+### RIGHT: rotate them
+
+// Rotating trades scarce horizontal space for free vertical space
+#let b = (
+  height: 3, depth: 3, widths: (0.3,), offset: 0.6,
+  label-orient: "diagonal",
+)
+#draw-network((
+  conv(label: "convolution", ..b),
+  conv(label: "downsample", ..b),
+  conv(label: "projection", ..b),
+))
+
+### RIGHT: or stagger one
+
+// Or drop the middle one to a second row
+#let b = (height: 3, depth: 3, widths: (0.3,), offset: 0.6)
+#draw-network((
+  conv(label: "convolution", ..b),
+  conv(label: "downsample", label-dy: -0.55, ..b),
+  conv(label: "projection", ..b),
+))
+
+### Or fan them by anchor
+
+// Anchor the outer labels by their facing edges
+#let b = (height: 3, depth: 3, widths: (0.3,), offset: 0.6)
+#draw-network((
+  conv(label: "left", label-anchor: "base-east",
+       label-dx: -0.2, ..b),
+  conv(label: "mid", ..b),
+  conv(label: "right", label-anchor: "base-west",
+       label-dx: 0.2, ..b),
+))
+
+### The three orientation presets
+
+#let b = (height: 3, depth: 3, widths: (0.3,), offset: 2)
+#draw-network((
+  conv(label: "horizontal", ..b),
+  conv(label: "diagonal", label-orient: "diagonal", ..b),
+  conv(label: "vertical", label-orient: "vertical", ..b),
+))
+
+### An arbitrary angle
+
+#draw-network((
+  conv(
+    label: "thirty degrees",
+    label-angle: 30deg,
+    label-anchor: "base-west",
+  ),
 ))
 
 ### An image on the input
@@ -380,29 +676,70 @@ Every example below compiles as written, given the import above.
   conv(),
 ))
 
+### Your own image
+
+#let mnist = "../../examples/networks/mnist-img-sample.jpg"
+#draw-network((
+  input(image: image(mnist), channels: (1, 28)),
+  conv(),
+))
+
+### An image on a later block
+
+// Not only the input takes one
+#draw-network((
+  input(image: "default", label: "in"),
+  conv(image: "default", label: "features",
+       depth: 4, widths: (0.4,), offset: 2),
+))
+
+### A symbol on a block
+
+#draw-network((
+  custom(image: [#text(20pt)[$Sigma$]], label: "sum"),
+  custom(image: [#text(20pt)[$times$]], label: "scale"),
+))
+
 ### Arbitrary content on a block
 
-// Any content works, not only an image
 #draw-network((
-  custom(image: [#text(20pt)[$Sigma$]]),
-  custom(image: [hello]),
+  custom(image: [hello], label: "text"),
+  custom(image: [#rect(width: 60%, height: 60%, fill: red)],
+         label: "any content"),
 ))
 
 ### Recolouring
 
 #draw-network((
-  conv(fill: rgb("#73000A")),
-  conv(fill: rgb("#466A9F")),
-  conv(fill: rgb("#65780B")),
+  conv(label: "default"),
+  conv(label: "garnet", fill: rgb("#73000A")),
+  conv(label: "atlantic", fill: rgb("#466A9F")),
+  conv(label: "horseshoe", fill: rgb("#65780B")),
+))
+
+### Opacity
+
+#draw-network((
+  conv(label: "0.2", opacity: 0.2),
+  conv(label: "0.5", opacity: 0.5),
+  conv(label: "0.8", opacity: 0.8),
+  conv(label: "1.0", opacity: 1.0),
 ))
 
 ### Activation bands
 
 #draw-network(
+  (conv(widths: (0.8,)), conv(widths: (0.8,))),
+  show-relu: true,
+)
+
+### Band colour
+
+#draw-network(
   (
-    conv(label: "no band", height: 4, depth: 4, widths: (0.8,), show-relu: false),
-    conv(label: "default band", height: 4, depth: 4, widths: (0.8,)),
-    conv(label: "own band", height: 4, depth: 4, widths: (0.8,),
+    conv(label: "derived band", widths: (0.8,),
+         fill: rgb("#466A9F")),
+    conv(label: "stated band", widths: (0.8,),
          fill: rgb("#466A9F"), bandfill: rgb("#CED318")),
   ),
   show-relu: true,
@@ -415,31 +752,93 @@ Every example below compiles as written, given the import above.
   palette: "cold",
 )
 
+### A figure on your own scheme
+
+// A whole figure recoloured to one scheme
+#let garnet = rgb("#73000A")
+#let atlantic = rgb("#466A9F")
+#let honeycomb = rgb("#A49137")
+
+#draw-network(
+  (
+    conv(label: "stem", fill: atlantic, legend: "convolution"),
+    conv(label: "stage", fill: atlantic, widths: (0.4, 0.4)),
+    pool(fill: honeycomb, legend: "pool"),
+    conv(label: "stage", fill: atlantic, widths: (0.4, 0.4)),
+    fc(label: "head", fill: garnet, depth: 0, legend: "head"),
+  ),
+  show-legend: true,
+)
+
 ### Custom blocks
 
 #draw-network((
-  custom(label: "mine", fill: rgb("#466A9F")),
-  custom(
-    label: "also mine",
-    widths: (0.2, 0.4, 0.2),
-    fill: rgb("#1F414D"),
-  ),
+  custom(label: "plain"),
+  custom(label: "coloured", fill: rgb("#466A9F")),
+  custom(label: "thin", width: 0.15, fill: rgb("#1F414D")),
 ))
+
+### A banded custom block
+
+#draw-network(
+  (
+    custom(
+      label: "banded",
+      widths: (0.3, 0.5, 0.3),
+      fill: rgb("#65780B"),
+      bandfill: rgb("#CED318"),
+      show-relu: true,
+    ),
+  ),
+)
+
+### Legend names on custom blocks
+
+#draw-network(
+  (
+    custom(label: "a", fill: rgb("#466A9F"), legend: "my block"),
+    custom(label: "b", fill: rgb("#466A9F")),
+    custom(label: "c", fill: rgb("#A49137"), legend: "other block"),
+  ),
+  show-legend: true,
+)
 
 ### Defining your own block types
 
 // Your own block type is a function returning a layer
-#let attention(..args) = custom(
-  fill: rgb("#466A9F"), width: 0.35, height: 4, depth: 4,
-  legend: "Attention", ..args,
+#let attention(..a) = custom(
+  fill: rgb("#466A9F"), width: 0.35, legend: "Attention", ..a,
 )
-#let mlp(..args) = custom(
-  fill: rgb("#A49137"), width: 0.5, height: 4, depth: 4,
-  legend: "MLP", ..args,
+#let mlp(..a) = custom(
+  fill: rgb("#A49137"), width: 0.55, legend: "MLP", ..a,
 )
 
 #draw-network(
-  (attention(label: "attn"), mlp(label: "mlp"), attention(label: "attn")),
+  (attention(label: "attn"), mlp(label: "mlp"),
+   attention(label: "attn"), mlp(label: "mlp")),
+  show-legend: true,
+)
+
+### A figure written in that vocabulary
+
+#let attn(..a) = custom(fill: rgb("#466A9F"), width: 0.3,
+  height: 4, depth: 4, legend: "Attention", ..a)
+#let mlp(..a) = custom(fill: rgb("#A49137"), width: 0.45,
+  height: 4, depth: 4, legend: "MLP", ..a)
+
+#draw-network(
+  (
+    custom(name: "in", label: "tokens", width: 0.2, height: 4, depth: 4),
+    attn(name: "a", label: "attn"),
+    sum(name: "s1"),
+    mlp(name: "m", label: "mlp"),
+    sum(name: "s2"),
+  ),
+  connections: (
+    (from: "in", to: "s1", legend: "residual"),
+    (from: "s1", to: "s2"),
+  ),
+  groups: ((from: "a", to: "s2", label: "encoder block"),),
   show-legend: true,
 )
 
@@ -454,24 +853,64 @@ Every example below compiles as written, given the import above.
   connections: ((from: "a", to: "c"),),
 )
 
-### Routing modes
+### mode: air
 
 #draw-network(
-  (
-    conv(name: "a", label: "a", height: 4, depth: 4, widths: (0.3,)),
-    conv(name: "b", label: "b", height: 4, depth: 4, widths: (0.3,)),
-    conv(name: "c", label: "c", height: 4, depth: 4, widths: (0.3,)),
-    conv(name: "d", label: "d", height: 4, depth: 4, widths: (0.3,)),
-    conv(name: "e", label: "e", height: 4, depth: 4, widths: (0.3,)),
-  ),
-  connections: (
-    (from: "a", to: "c", mode: "air", label: "air"),
-    (from: "b", to: "d", mode: "flat", label: "flat"),
-    (from: "c", to: "e", mode: "depth", label: "depth"),
-  ),
+  (conv(name: "a"), conv(), conv(name: "c")),
+  connections: ((from: "a", to: "c", mode: "air"),),
+)
+
+### mode: flat
+
+#draw-network(
+  (conv(name: "a"), conv(), conv(name: "c")),
+  connections: ((from: "a", to: "c", mode: "flat"),),
+)
+
+### mode: depth
+
+#draw-network(
+  (conv(name: "a"), conv(), conv(name: "c")),
+  connections: ((from: "a", to: "c", mode: "depth"),),
 )
 
 ### Automatic lane heights
+
+// Longer routes arc over shorter ones, unasked
+#draw-network(
+  (
+    conv(name: "a"), conv(name: "b"), conv(name: "c"),
+    conv(name: "d"), conv(name: "e"),
+  ),
+  connections: (
+    (from: "a", to: "e"),
+    (from: "b", to: "d"),
+    (from: "c", to: "d"),
+  ),
+)
+
+### Equal reach, overlapping
+
+// Equal reach, overlapping: the second goes below the axis
+#draw-network(
+  (
+    conv(name: "a"), conv(name: "b"),
+    conv(name: "c"), conv(name: "d"),
+  ),
+  connections: (
+    (from: "a", to: "c"),
+    (from: "b", to: "d"),
+  ),
+)
+
+### A stated height
+
+#draw-network(
+  (conv(name: "a"), conv(), conv(name: "c")),
+  connections: ((from: "a", to: "c", pos: 5.5),),
+)
+
+### lane-unit
 
 #draw-network(
   (
@@ -479,31 +918,53 @@ Every example below compiles as written, given the import above.
     conv(name: "c"), conv(name: "d"),
   ),
   connections: (
-    // the longer route arcs over the shorter
     (from: "a", to: "d"),
     (from: "b", to: "c"),
   ),
+  lane-unit: 2.0,
 )
 
 ### Arriving on the block itself
 
 #draw-network(
   (
-    conv(name: "a", label: "a"), conv(name: "b", label: "b"),
-    concat(name: "cat", label: "concat"),
+    conv(name: "a", label: "a"),
+    conv(name: "b", label: "b"),
+    concat(name: "cat", label: "concat", depth: 5),
   ),
   connections: (
-    (from: "a", to: "cat"),                     // arrives on the axis arrow
-    (from: "b", to: "cat", touch-layer: true),  // arrives on the block itself
+    // on the axis arrow in front of the target
+    (from: "a", to: "cat"),
+    // on the target block itself
+    (from: "b", to: "cat", touch-layer: true),
   ),
 )
 
-### A fan of arrivals into one block
+### All three arrival edges
 
+#let t = (touch-layer: true)
+#draw-network(
+  (
+    conv(name: "a", label: "a"),
+    conv(name: "b", label: "b"),
+    conv(name: "c", label: "c"),
+    concat(name: "cat", label: "concat", depth: 5, height: 5),
+  ),
+  connections: (
+    (from: "a", to: "cat", mode: "air", ..t),
+    (from: "b", to: "cat", mode: "flat", ..t),
+    (from: "c", to: "cat", mode: "depth", ..t),
+  ),
+)
+
+### A fan of arrivals, spaced automatically
+
+// Three arrivals on one edge, spaced without picking numbers
 #draw-network(
   (
     conv(name: "a", label: "a"), conv(name: "b", label: "b"),
-    conv(name: "c", label: "c"), concat(name: "cat", label: "concat", depth: 6),
+    conv(name: "c", label: "c"),
+    concat(name: "cat", label: "concat", depth: 6),
   ),
   connections: (
     (from: "a", to: "cat", touch-layer: true),
@@ -512,10 +973,26 @@ Every example below compiles as written, given the import above.
   ),
 )
 
+### Placing arrivals by hand
+
+#draw-network(
+  (
+    conv(name: "a", label: "a"), conv(name: "b", label: "b"),
+    concat(name: "cat", label: "concat", depth: 6),
+  ),
+  connections: (
+    (from: "a", to: "cat", touch-layer: true, arrive-offset: -0.6),
+    (from: "b", to: "cat", touch-layer: true, arrive-offset: 0.6),
+  ),
+)
+
 ### Telling routes apart
 
 #draw-network(
-  (conv(name: "a"), conv(name: "b"), conv(name: "c"), conv(name: "d")),
+  (
+    conv(name: "a"), conv(name: "b"),
+    conv(name: "c"), conv(name: "d"),
+  ),
   connections: (
     (from: "a", to: "c", color: rgb("#73000A"), thickness: 2),
     (from: "b", to: "d", color: rgb("#466A9F"), dash: "dashed"),
@@ -527,10 +1004,18 @@ Every example below compiles as written, given the import above.
 #draw-network(
   (conv(name: "a"), conv(name: "b"), conv(name: "c")),
   connections: (
-    (from: "a", to: "c", color: rgb("#73000A"), legend: "residual add"),
+    (from: "a", to: "c", color: rgb("#73000A"),
+     legend: "residual add"),
   ),
   show-legend: true,
   main-legend: "forward pass",
+)
+
+### Labelling a route
+
+#draw-network(
+  (conv(name: "a"), conv(), conv(name: "c")),
+  connections: ((from: "a", to: "c", label: "skip"),),
 )
 
 ### Suppressing an axis arrow
@@ -541,6 +1026,49 @@ Every example below compiles as written, given the import above.
   conv(label: "b"),
   conv(label: "c"),
 ))
+
+### Joining the input up
+
+// input defaults to no outgoing arrow; turn it on
+#draw-network((
+  input(image: "default", show-connection: true),
+  conv(label: "conv", offset: 1.5),
+))
+
+### COMPOSITE: a residual block
+
+#draw-network(
+  (
+    conv(name: "in", label: "in", widths: (0.3,)),
+    convres(name: "c1", label: "3x3", widths: (0.5,)),
+    convres(name: "c2", label: "3x3", widths: (0.5,)),
+    sum(name: "add"),
+    conv(name: "out", label: "out", widths: (0.3,)),
+  ),
+  connections: (
+    (from: "in", to: "add", color: rgb("#466A9F"),
+     legend: "identity shortcut"),
+  ),
+  groups: ((from: "c1", to: "add", label: "residual block"),),
+  show-legend: true,
+)
+
+### COMPOSITE: encoder-decoder skips
+
+#let enc = (widths: (0.3,))
+#draw-network(
+  (
+    conv(name: "e1", label: "e1", height: 6, depth: 6, ..enc),
+    conv(name: "e2", label: "e2", height: 4.5, depth: 4.5, ..enc),
+    conv(name: "e3", label: "e3", height: 3, depth: 3, ..enc),
+    deconv(name: "d3", label: "d3", height: 4.5, depth: 4.5),
+    deconv(name: "d2", label: "d2", height: 6, depth: 6),
+  ),
+  connections: (
+    (from: "e2", to: "d3", touch-layer: true),
+    (from: "e1", to: "d2", touch-layer: true),
+  ),
+)
 
 ### Group brackets
 
@@ -555,16 +1083,43 @@ Every example below compiles as written, given the import above.
   ),
 )
 
-### Stacked groups
+### A group of one layer
+
+// from and to may be the same layer
+#draw-network(
+  (conv(name: "a"), conv(name: "b"), conv(name: "c")),
+  groups: ((from: "b", to: "b", label: "just this one"),),
+)
+
+### Tinting brackets
+
+#draw-network(
+  (conv(name: "a"), conv(name: "b"), conv(name: "c"), conv(name: "d")),
+  groups: (
+    (from: "a", to: "b", label: "backbone", color: rgb("#73000A")),
+    (from: "c", to: "d", label: "head", color: rgb("#466A9F")),
+  ),
+)
+
+### Stacked group rows
 
 #draw-network(
   (conv(name: "a"), conv(name: "b"), conv(name: "c")),
   groups: (
     (from: "a", to: "b", label: "stage 1"),
     (from: "c", to: "c", label: "stage 2"),
-    (from: "a", to: "c", label: "whole network", offset: 2.1,
-     color: rgb("#73000A")),
+    (from: "a", to: "c", label: "whole network",
+     offset: 2.1, color: rgb("#73000A")),
   ),
+)
+
+### Brackets clear routes automatically
+
+// Brackets sit below routes that run underneath the stack
+#draw-network(
+  (conv(name: "a"), conv(name: "b"), conv(name: "c")),
+  connections: ((from: "a", to: "c", mode: "flat"),),
+  groups: ((from: "a", to: "c", label: "backbone"),),
 )
 
 ### Repeated blocks
@@ -574,6 +1129,48 @@ Every example below compiles as written, given the import above.
   convres(label: "bottleneck", repeat: 3),
   conv(label: "head"),
 ))
+
+### Any count
+
+#draw-network((
+  convres(label: "x2", repeat: 2),
+  convres(label: "x6", repeat: 6),
+  convres(label: "x24", repeat: 24),
+))
+
+### WRONG: repeat on a conv with a pool attached
+
+// Reads as though the pool repeats too
+#draw-network((
+  conv(label: "conv x3", repeat: 3),
+  pool(),
+))
+
+### RIGHT: split the repeat off
+
+// Split it: two repeat, the third carries the pool
+#draw-network((
+  conv(label: "conv x2", repeat: 2),
+  conv(label: "conv + pool", offset: 2),
+  pool(),
+))
+
+### COMPOSITE: backbone, neck, head
+
+#draw-network(
+  (
+    conv(name: "s1", label: "P1", shape: (32, 160, 160)),
+    conv(name: "s2", label: "P2", shape: (64, 80, 80)),
+    convres(name: "s3", label: "P3", shape: (128, 40, 40), repeat: 2),
+    conv(name: "n1", label: "neck", shape: (128, 40, 40)),
+    conv(name: "h1", label: "head", shape: (64, 40, 40)),
+  ),
+  groups: (
+    (from: "s1", to: "s3", label: "Backbone"),
+    (from: "n1", to: "n1", label: "Neck"),
+    (from: "h1", to: "h1", label: "Head"),
+  ),
+)
 
 ### Parallel branches
 
@@ -586,7 +1183,43 @@ Every example below compiles as written, given the import above.
   concat(label: "concat"),
 ))
 
-### Branches stacked along the projection
+### An odd count sits on the trunk line
+
+// An odd count puts one branch on the trunk line
+#draw-network((
+  conv(label: "in"),
+  branch(spread: 4, branches: (
+    (conv(label: "a"),),
+    (conv(label: "b"),),
+    (conv(label: "c"),),
+  )),
+  concat(label: "concat"),
+))
+
+### Branches of different lengths
+
+// The rejoin waits for the longest branch
+#draw-network((
+  conv(label: "in"),
+  branch(spread: 5, branches: (
+    (conv(label: "a1"), conv(label: "a2"), conv(label: "a3")),
+    (conv(label: "b1"),),
+  )),
+  concat(label: "concat"),
+))
+
+### spread and lead
+
+#draw-network((
+  conv(label: "in"),
+  branch(spread: 9, lead: 3, branches: (
+    (conv(label: "a"),),
+    (conv(label: "b"),),
+  )),
+  concat(label: "concat"),
+))
+
+### Stacked along the projection
 
 #draw-network((
   conv(label: "in"),
@@ -597,9 +1230,24 @@ Every example below compiles as written, given the import above.
   concat(label: "concat"),
 ))
 
+### Three heads in depth mode
+
+#draw-network((
+  conv(label: "in"),
+  branch(
+    spread: 3.5, spread-mode: "depth", rejoin-lead: 3,
+    branches: (
+      (conv(label: "P3"),),
+      (conv(label: "P4"),),
+      (conv(label: "P5"),),
+    ),
+  ),
+  output(label: "detect"),
+))
+
 ### A multi-input network
 
-// Nothing before it, so the branches simply begin: a two-input network
+// Nothing before it: a two-input network
 #draw-network((
   branch(spread: 5, branches: (
     (input(label: "rgb"), conv(label: "a")),
@@ -634,6 +1282,57 @@ Every example below compiles as written, given the import above.
   conv(label: "out"),
 ))
 
+### Connections and groups reach into branches
+
+// Named layers inside a branch are ordinary targets
+#draw-network(
+  (
+    conv(name: "in", label: "in"),
+    branch(spread: 5, branches: (
+      (conv(name: "a", label: "a"),),
+      (conv(name: "b", label: "b"),),
+    )),
+    concat(name: "cat", label: "concat"),
+  ),
+  connections: (
+    (from: "in", to: "cat", mode: "flat",
+     color: rgb("#73000A"), legend: "bypass"),
+  ),
+  groups: ((from: "a", to: "b", label: "parallel paths"),),
+  show-legend: true,
+)
+
+### COMPOSITE: two-stream fusion
+
+#draw-network((
+  branch(spread: 6, branches: (
+    (
+      input(label: "RGB", image: "default"),
+      conv(name: "r1", label: "conv", shape: (32, 160, 160)),
+      conv(name: "r2", label: "conv", shape: (64, 80, 80)),
+    ),
+    (
+      input(label: "IR"),
+      conv(name: "i1", label: "conv", shape: (32, 160, 160)),
+      conv(name: "i2", label: "conv", shape: (64, 80, 80)),
+    ),
+  )),
+  concat(label: "concat", depth: 5),
+  conv(label: "fused", shape: (128, 80, 80)),
+))
+
+### COMPOSITE: an inception block
+
+#draw-network((
+  conv(label: "in", widths: (0.3,)),
+  branch(spread: 3.4, lead: 1.6, branches: (
+    (conv(label: "1x1", widths: (0.2,)),),
+    (conv(label: "3x3", widths: (0.4,)),),
+    (conv(label: "5x5", widths: (0.6,)),),
+  )),
+  concat(label: "concat"),
+))
+
 ### A legend
 
 #draw-network(
@@ -653,11 +1352,159 @@ Every example below compiles as written, given the import above.
   legend-title: "Operations",
 )
 
+### Layers and routes in one legend
+
+// Layer swatches and route samples in one legend
+#draw-network(
+  (
+    conv(name: "a", legend: "convolution"),
+    convres(name: "b", legend: "residual conv"),
+    conv(name: "c"),
+  ),
+  connections: (
+    (from: "a", to: "c", color: rgb("#73000A"), legend: "shortcut"),
+    (from: "b", to: "c", color: rgb("#466A9F"), dash: "dashed",
+     legend: "auxiliary"),
+  ),
+  show-legend: true,
+  main-legend: "forward pass",
+)
+
 ### Fitting the page
 
 #draw-network(
   (conv(), conv(), conv(), conv()),
   scale: 55%,
+)
+
+### Line weight
+
+#draw-network(
+  (conv(), conv(), conv()),
+  stroke-thickness: 2.5,
+)
+
+### Projection strength
+
+#draw-network(
+  (conv(depth: 5), conv(depth: 5)),
+  depth-multiplier: 0.6,
+)
+
+### PATTERN: a classifier
+
+#draw-network(
+  (
+    input(name: "in", image: "default", shape: (3, 224, 224),
+          channels: (3, 224)),
+    conv(name: "c1", label: "conv1", shape: (64, 112, 112),
+         channels: (64, 112)),
+    pool(),
+    conv(name: "c2", label: "conv2", shape: (128, 56, 56),
+         channels: (128, 56), widths: (0.4, 0.4)),
+    pool(),
+    conv(name: "c3", label: "conv3", shape: (256, 28, 28),
+         channels: (256, 28), widths: (0.4, 0.4)),
+    gap(name: "g", label: "gap"),
+    fc(name: "f", label: "fc", channels: (1000,), depth: 0),
+    softmax(name: "s", label: "softmax"),
+  ),
+  groups: (
+    (from: "c1", to: "c3", label: "Feature extractor"),
+    (from: "g", to: "s", label: "Classifier"),
+  ),
+  show-legend: true,
+  show-relu: true,
+)
+
+### PATTERN: an encoder-decoder
+
+#let e(n, s) = conv(name: n, label: n, shape: s, channels: (s.at(0), s.at(1)))
+#let d(n, s) = deconv(name: n, label: n, shape: s)
+
+#draw-network(
+  (
+    e("e1", (32, 128, 128)),
+    e("e2", (64, 64, 64)),
+    e("e3", (128, 32, 32)),
+    d("d3", (64, 64, 64)),
+    d("d2", (32, 128, 128)),
+    conv(name: "out", label: "out", shape: (1, 128, 128)),
+  ),
+  connections: (
+    (from: "e2", to: "d3", touch-layer: true,
+     color: rgb("#466A9F"), legend: "skip"),
+    (from: "e1", to: "d2", touch-layer: true,
+     color: rgb("#466A9F")),
+  ),
+  groups: (
+    (from: "e1", to: "e3", label: "Encoder"),
+    (from: "d3", to: "out", label: "Decoder"),
+  ),
+  show-legend: true,
+)
+
+### PATTERN: residual stages
+
+#draw-network(
+  (
+    conv(name: "in", label: "in", shape: (64, 56, 56)),
+    convres(name: "b1", label: "block", shape: (64, 56, 56),
+            widths: (0.3, 0.3), repeat: 2),
+    sum(name: "a1"),
+    convres(name: "b2", label: "block", shape: (128, 28, 28),
+            widths: (0.3, 0.3), repeat: 2),
+    sum(name: "a2"),
+    conv(name: "out", label: "out", shape: (128, 28, 28)),
+  ),
+  connections: (
+    (from: "in", to: "a1", color: rgb("#466A9F"),
+     legend: "identity"),
+    (from: "a1", to: "a2", color: rgb("#73000A"), dash: "dashed",
+     legend: "projected"),
+  ),
+  groups: (
+    (from: "b1", to: "a1", label: "stage 1"),
+    (from: "b2", to: "a2", label: "stage 2"),
+  ),
+  show-legend: true,
+)
+
+### PATTERN: a multi-scale head
+
+#draw-network(
+  (
+    conv(name: "p3", label: "P3", shape: (128, 40, 40)),
+    conv(name: "p4", label: "P4", shape: (256, 20, 20)),
+    conv(name: "p5", label: "P5", shape: (512, 10, 10)),
+    branch(spread: 4, spread-mode: "depth", rejoin-lead: 3.2,
+      open: "end", branches: (
+        (conv(name: "h3", label: "head P3", shape: (64, 40, 40)),),
+        (conv(name: "h4", label: "head P4", shape: (64, 20, 20)),),
+        (conv(name: "h5", label: "head P5", shape: (64, 10, 10)),),
+      )),
+  ),
+  groups: ((from: "p3", to: "p5", label: "Backbone"),),
+)
+
+### PATTERN: a repeated pair, built with a loop
+
+// Twelve identical blocks, written once
+#let block(i) = (
+  custom(name: "a" + str(i), label: if i == 1 { "attn" },
+         fill: rgb("#466A9F"), width: 0.25, height: 3.5, depth: 3.5,
+         legend: "Attention"),
+  custom(name: "m" + str(i), label: if i == 1 { "mlp" },
+         fill: rgb("#A49137"), width: 0.4, height: 3.5, depth: 3.5,
+         legend: "MLP"),
+)
+
+#draw-network(
+  (custom(name: "in", label: "tokens", width: 0.2,
+          height: 3.5, depth: 3.5),)
+    + range(1, 7).map(block).flatten(),
+  groups: ((from: "a1", to: "m6", label: "6 encoder blocks"),),
+  show-legend: true,
 )
 
 ## Errors you will see
