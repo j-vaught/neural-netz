@@ -1,7 +1,7 @@
 #import "../../src/lib.typ": *
 #set page(width: auto, height: auto, margin: 3mm)
 // @show
-// Nothing before it, so the branches simply begin: a two-input network
+// Nothing before it: a two-input network
 #draw-network((
   branch(spread: 5, branches: (
     (input(label: "rgb"), conv(label: "a")),

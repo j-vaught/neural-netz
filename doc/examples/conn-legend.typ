@@ -4,7 +4,8 @@
 #draw-network(
   (conv(name: "a"), conv(name: "b"), conv(name: "c")),
   connections: (
-    (from: "a", to: "c", color: rgb("#73000A"), legend: "residual add"),
+    (from: "a", to: "c", color: rgb("#73000A"),
+     legend: "residual add"),
   ),
   show-legend: true,
   main-legend: "forward pass",

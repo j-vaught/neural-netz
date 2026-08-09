@@ -6,7 +6,7 @@
   groups: (
     (from: "a", to: "b", label: "stage 1"),
     (from: "c", to: "c", label: "stage 2"),
-    (from: "a", to: "c", label: "whole network", offset: 2.1,
-     color: rgb("#73000A")),
+    (from: "a", to: "c", label: "whole network",
+     offset: 2.1, color: rgb("#73000A")),
   ),
 )

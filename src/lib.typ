@@ -2104,10 +2104,23 @@ canvas(length: 1cm * scale-factor, {
       
           if name != none {
             let (ox, oy) = get-depth-offsets(radius * 2)
+            // Boxed from the circle that was actually drawn. The cursor has already
+            // advanced past the node by this point, and working back from it lost the
+            // depth offset that `center-x` was placed with, so the recorded box sat a
+            // radius to the right of the node. Groups measured the wrong extent, and a
+            // route departing the node had its arrowhead redrawn beside the real one.
             layer-positions.insert(name, (
-              x: x - radius * 2, y: center-y - radius, w: radius * 2, h: radius * 2, ox: ox, oy: oy,
+              x: center-x - radius, y: center-y - radius, w: radius * 2, h: radius * 2, ox: ox, oy: oy,
               type: "sum", radius: radius, center-x: center-x,
-              anchors: get-layer-anchors(x - radius * 2, center-y - radius, radius * 2, radius * 2, ox, oy),
+              // Anchored with no depth, unlike every other layer. `get-layer-anchors`
+              // puts a block's true east and west at the centre of its sheared side
+              // face, which is half the depth-lean above the block's own middle, and
+              // that is right for a prism. A sum node is a flat circle sitting on the
+              // axis with no lean at all, so inheriting the lean lifted its anchors a
+              // radius clear of the axis: a route departing one left the arrow it was
+              // supposed to leave from, and the head redrawn at that anchor floated
+              // above the trunk with nothing joining it.
+              anchors: get-layer-anchors(center-x - radius, center-y - radius, radius * 2, radius * 2, 0, 0),
               pool-offset: 0
             ))
           }
