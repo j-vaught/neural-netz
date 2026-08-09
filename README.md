@@ -18,6 +18,19 @@ Under the hood, this package only uses the native Typst package [CeTZ](https://t
 
 > This is the [j-vaught fork](https://github.com/j-vaught/neural-netz), version 0.4, extending [Edgar Remy's neural-netz 0.3](https://github.com/edgaremy/neural-netz) with parallel branches, tensor-shape sizing, automatic spacing and lanes, group brackets, repeat notation, connection styling and more. See the [changelog](CHANGELOG.md) for the full list.
 
+## Documentation
+
+**[The neural-netz manual](doc/neural-netz-manual.pdf)** is the reference: every
+feature on its own, in the smallest figure that demonstrates it, with the code
+beside each one. Every figure in it is compiled from the code printed next to it,
+so the two cannot drift apart. Rebuild it with `doc/build.sh`.
+
+This README is a tour. The manual is where you look up what one option does.
+
+For writing neural-netz with an LLM, [`llms.txt`](llms.txt) is a single flat file
+with every option, every layer type and forty worked examples, generated from the
+package's own tables by `doc/gen-llms.py`.
+
 ## Usage
 
 Simply import the all-in-one drawing function from the neural-netz package:

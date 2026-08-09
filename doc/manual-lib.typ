@@ -47,23 +47,27 @@
   text(size: 8pt, raw(body, lang: "typ", block: true)),
 )
 
-#let figure-block(name, width) = block(
+// A figure is drawn at whatever size its own canvas came out, which for a tall
+// or long network is most of a page. Constraining both axes and letting the
+// image fit inside keeps every example the same visual weight, so a page is
+// laid out by what the examples say rather than by how big they happened to be.
+#let figure-block(name, width, height) = block(
   stroke: 0.5pt + grey-30,
   inset: 6pt,
   width: 100%,
   radius: 0pt,
-  align(center, image(build-dir + name + ".pdf", width: width, fit: "contain")),
+  align(center, image(build-dir + name + ".pdf", width: width, height: height, fit: "contain")),
 )
 
 // Code on the left, picture on the right. The default for a small example.
-#let ex(name, ratio: 1fr, fig-width: 100%, caption: none) = {
+#let ex(name, ratio: 1fr, fig-width: 100%, fig-height: 4.2cm, caption: none) = {
   block(breakable: false, width: 100%, {
     grid(
       columns: (1fr, ratio),
       column-gutter: 8pt,
       align: horizon,
       code-block(ex-source(name)),
-      figure-block(name, fig-width),
+      figure-block(name, fig-width, fig-height),
     )
     if caption != none {
       v(3pt)
@@ -74,11 +78,11 @@
 
 // Code above, picture below, full width. For anything too wide to sit beside
 // its own source.
-#let ex-wide(name, fig-width: 100%, caption: none) = {
+#let ex-wide(name, fig-width: 100%, fig-height: 6cm, caption: none) = {
   block(breakable: false, width: 100%, {
     code-block(ex-source(name))
     v(4pt)
-    figure-block(name, fig-width)
+    figure-block(name, fig-width, fig-height)
     if caption != none {
       v(3pt)
       text(size: 8pt, fill: grey-70, style: "italic", caption)
@@ -87,9 +91,9 @@
 }
 
 // A picture with no listing, for the odd figure whose source says nothing.
-#let ex-figure(name, fig-width: 100%, caption: none) = {
+#let ex-figure(name, fig-width: 100%, fig-height: 6cm, caption: none) = {
   block(breakable: false, width: 100%, {
-    figure-block(name, fig-width)
+    figure-block(name, fig-width, fig-height)
     if caption != none {
       v(3pt)
       align(center, text(size: 8pt, fill: grey-70, style: "italic", caption))

@@ -10,5 +10,5 @@
   fc(label: "fc"),
   sum(),
   softmax(label: "softmax"),
-  output(label: "output"),
+  output(label: "output", offset: 2),
 ))

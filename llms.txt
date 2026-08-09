@@ -1,0 +1,709 @@
+# neural-netz
+
+Neural network architecture diagrams for Typst, drawn as isometric block
+diagrams in the style of PlotNeuralNet. Built on CeTZ.
+
+You describe the network as an array of layers. The package computes geometry,
+spacing, the arrows along the main axis, the routing of any skip connection, and
+the legend.
+
+## Import
+
+    #import "@preview/neural-netz:0.4.0": draw-network, conv, pool, input
+
+Version 0.4 is a fork and is not yet on Typst Universe, where `neural-netz`
+still resolves to 0.3.0. Until it is published, import a local copy:
+
+    #import "path/to/src/lib.typ": *
+
+## Core model
+
+A layer is a dictionary with a `type`, or equivalently a constructor call:
+
+    (type: "conv", label: "a")     ==     conv(label: "a")
+
+Prefer constructors: Typst rejects a misspelled argument by name, and the
+signature lists the options that type accepts. Both forms work everywhere,
+including inside `branches`, and mix freely.
+
+Rules that are easy to get wrong:
+
+- An option a layer type does not accept is an ERROR, not an ignored key. Check
+  the per-type table below before using an option.
+- `width` and `widths` are different options and not interchangeable. `widths`
+  takes an array and draws one band per entry; only `conv`, `convres` and
+  `custom` accept it. `input`, `deconv`, `concat`, `convsoftmax`, `softmax`,
+  `output` and `custom` accept the scalar `width`. `pool`, `unpool`, `gap`, `fc`
+  and `sum` accept neither.
+- `channels` may have at most one more entry than the layer has bands. The extra
+  entry becomes the diagonal axis label. More than that is an error from inside
+  the package.
+- Connections and groups refer to layers by `name`. A layer with no `name`
+  cannot be referred to, and naming a layer that does not exist is an error.
+- `offset`, `pos` and `arrive-offset` all default to `auto`. Do not write
+  `offset: auto` or `pos: auto` explicitly; it is the default. Give a number
+  only when overriding.
+- `pool` and `unpool` attach to the layer before them unless given an `offset`.
+- `sum` is a node with a `radius`, not a block with a width.
+- `type: "skip"` is a CONNECTION type, not a layer type. There is no skip layer.
+
+## draw-network arguments
+
+    #draw-network(
+      layers,                  // array of layer dictionaries; the only positional
+      connections: (),         // array of route dictionaries
+      groups: (),              // array of bracket dictionaries
+      palette: "warm",         // "warm" or "cold"
+      show-legend: false,
+      legend-title: "Layers",
+      main-legend: none,       // names the automatic axis arrows in the legend
+      scale: 100%,             // shrinks the whole figure, text included
+      stroke-thickness: 1,     // multiplies every stroke
+      depth-multiplier: 0.3,   // strength of the isometric lean
+      lane-unit: 0.75,         // spacing between automatic route heights
+      shape-scale: (spatial: (1.2, -3.2), channels: (0.075, 0.0)),
+      auto-gap: 0.55,          // white space added by automatic offsets
+      show-relu: false,        // activation bands, figure-wide
+    )
+
+Also exported: `depth-shear(depth, depth-multiplier: 0.3)` and
+`min-clear-offset(depth, depth-multiplier: 0.3)`, for figures computing their
+own geometry.
+
+## Options accepted by each layer type
+
+Anything not listed for a type is an error on that type.
+
+branch:
+  branches, lead, name, open, rejoin-lead, spread, spread-mode
+
+concat:
+  channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, width
+
+conv:
+  bandfill, channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, show-relu, widths, xlabel, ylabel, zlabel
+
+convres:
+  bandfill, channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, show-relu, widths, xlabel, ylabel, zlabel
+
+convsoftmax:
+  channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, width
+
+custom:
+  bandfill, channels, connection-label, depth, fill, height, image, input-style, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, show-relu, width, widths, xlabel, ylabel, zlabel
+
+deconv:
+  channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, width
+
+fc:
+  channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection
+
+gap:
+  channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection
+
+input:
+  channels, connection-label, depth, fill, height, image, input-style, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, width
+
+output:
+  channels, classes, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, width
+
+pool:
+  channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection
+
+softmax:
+  channels, classes, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection, width
+
+sum:
+  channels, connection-label, depth, fill, height, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, radius, show-connection, stroke, symbol
+
+unpool:
+  channels, connection-label, depth, fill, height, image, label, label-anchor, label-angle, label-dx, label-dy, label-orient, legend, name, offset, opacity, repeat, shape, show-connection
+
+
+Connection options:
+  arrive-offset, clearance, color, dash, from, label, layers, legend, mode, opacity, pos, thickness, to, touch-layer, type
+
+Group options:
+  color, from, label, offset, to
+
+## What each option means
+
+Geometry:
+- `height`, `depth` -- spatial extent of the tensor, in canvas units.
+- `width` -- thickness of the block (scalar). Thickness conventionally means
+  channel count.
+- `widths` -- array of band thicknesses; draws several bands in one block.
+- `shape: (channels, height, width)` -- derives height, depth and width from the
+  tensor shape, logarithmically. Supplies DEFAULTS: anything stated explicitly
+  wins, field by field. Only conv/convres/custom take a derived width.
+- `offset` -- gap before this layer. Default `auto`: covers the previous block's
+  isometric lean, adds `auto-gap`, and widens where a connection descends into
+  the gap. A number overrides.
+- `radius` -- sum node only, instead of a width.
+
+Text:
+- `label` -- name printed under the block.
+- `channels` -- numbers along the top, one per band, plus at most one extra that
+  becomes the diagonal axis label. Strings are allowed.
+- `xlabel`, `ylabel`, `zlabel` -- axis names (conv, convres, custom only).
+- `connection-label` -- label on the axis arrow AFTER this layer.
+- `legend` -- overrides the default legend name for this layer's type.
+- `label-orient` -- "horizontal" (default), "diagonal" or "vertical". Each
+  preset pairs its angle with the correct anchor. Any other value is an error.
+- `label-dx`, `label-dy`, `label-anchor`, `label-angle` -- manual placement.
+  Setting both `label-orient` and `label-angle` is an error. Labels anchor on
+  the baseline; use "base-east"/"base-west" for horizontal anchoring.
+
+Appearance:
+- `fill`, `opacity` -- block colour and solidity. Edge colours derive from fill.
+- `bandfill` -- activation band colour (conv, convres, custom). Undeclared, it
+  derives from the layer's own fill.
+- `show-relu` -- per layer, overrides the figure-wide setting.
+- `image` -- content drawn on the block's face, sheared to the projection. The
+  string "default" uses the bundled photograph. Any content works, not only
+  images.
+- `stroke`, `symbol` -- sum node outline and symbol.
+- `input-style` -- input/custom; draws the block as a flat plane.
+
+Structure:
+- `name` -- identifier for connections and groups. Not printed.
+- `show-connection` -- draws the axis arrow AFTER this layer. Defaults true,
+  except on `input`, where it defaults false.
+- `repeat: N` -- marks the block as repeated in series, drawn once with a
+  bracket carrying the count. Ignored on pool, unpool and sum. Describes one
+  layer entry, not a run of them.
+- `classes` -- softmax/output only.
+
+## Connection options
+
+A connection is a dictionary in the `connections` array.
+
+- `from`, `to` -- REQUIRED, names of layers.
+- `type` -- "skip" (default).
+- `mode` -- "air" (over the top, default), "flat" (underneath), "depth" (along
+  the projection).
+- `pos` -- height from the centre axis. Default `auto`: routes are ranked by
+  reach, so a longer route arcs over a shorter one. Equal reaches share a
+  height; two overlapping equals split across the axis.
+- `clearance` -- how far the lowest automatic route sits from the blocks.
+- `touch-layer: true` -- arrive on the target block itself rather than on the
+  axis arrow in front of it. The edge follows the mode: air lands on the top
+  edge, flat on the bottom, depth on the left.
+- `arrive-offset` -- position along that edge. Default `auto`: a fan spaces
+  itself, a lone arrival stays centred.
+- `color`, `dash`, `thickness` -- stroke. `thickness` MULTIPLIES the palette
+  width, so it composes with `stroke-thickness`. Arrowheads take the line
+  colour.
+- `legend` -- adds a line-sample legend entry. Routes sharing a name appear once.
+- `label` -- text on the route.
+- `opacity`, `layers` -- rarely needed.
+
+## Group options
+
+A group is a labelled bracket under a span of layers.
+
+- `from`, `to` -- REQUIRED, names of layers, inclusive. May be the same layer.
+- `label` -- bracket text.
+- `offset` -- pushes the bracket further down, for stacking rows of groups.
+- `color` -- tints one bracket.
+
+## Branches
+
+`branch` draws genuinely parallel paths. It is a container: none of the block
+options apply to it, only these.
+
+- `branches` -- array of layer arrays, one per parallel path. REQUIRED.
+- `spread` -- separation between paths, centred on the trunk. An odd count puts
+  one path on the trunk line; an even count leaves it empty.
+- `spread-mode` -- "vertical" (default) or "depth" (stacked along the
+  projection's 45-degree axis).
+- `lead` -- how far the fan-out and rejoin arrows run.
+- `rejoin-lead` -- widens the rejoin side alone. Depth mode often wants this.
+- `open` -- "start" draws no fan-out (a multi-input network), "end" draws no
+  rejoin (independent outputs). A branch with nothing before it is open at the
+  start by definition.
+
+Branches nest. Named layers inside a branch join the same table the trunk uses,
+so connections, groups and automatic lane ranking all reach into them. The
+rejoin waits for the longest branch.
+
+## Worked examples
+
+Every example below compiles as written, given the import above.
+
+### Minimal figure
+
+#draw-network((
+  conv(),
+  conv(),
+  conv(),
+))
+
+### Dictionary form
+
+#draw-network((
+  (type: "conv", label: "a"),
+  (type: "pool",),
+  (type: "conv", label: "b"),
+))
+
+### Constructor form (equivalent)
+
+#draw-network((
+  conv(label: "a"),
+  pool(),
+  conv(label: "b"),
+))
+
+### The predefined types
+
+#draw-network((
+  conv(label: "conv"),
+  convres(label: "convres"),
+  deconv(label: "deconv"),
+  concat(label: "concat"),
+  gap(label: "gap"),
+  fc(label: "fc"),
+  sum(),
+  softmax(label: "softmax"),
+  output(label: "output"),
+))
+
+### Pooling attaches to the block before it
+
+#draw-network((
+  conv(label: "conv"),
+  pool(),              // attaches to the block before
+  conv(label: "conv", offset: 2),
+  pool(offset: 1.5),   // an offset detaches it
+))
+
+### Sum nodes
+
+#draw-network((
+  conv(),
+  sum(),
+  sum(symbol: [$times$], radius: 0.5),
+  conv(),
+))
+
+### Sizing by hand
+
+#draw-network((
+  conv(label: "tall", height: 7, depth: 3),
+  conv(label: "deep", height: 3, depth: 7),
+  conv(label: "thick", widths: (1.6,)),
+))
+
+### Several bands in one block
+
+#draw-network((
+  conv(label: "one", widths: (0.8,)),
+  conv(label: "three", widths: (0.4, 0.4, 0.4)),
+  conv(label: "uneven", widths: (0.2, 0.8, 0.2)),
+))
+
+### A flat layer
+
+#draw-network((
+  conv(label: "3D", depth: 4),
+  fc(label: "2D", depth: 0),
+))
+
+### Sizing from tensor shapes
+
+// (channels, height, width) of the tensor this layer produces
+#draw-network((
+  conv(shape: (64, 128, 128), channels: (64, 128)),
+  conv(shape: (128, 64, 64), channels: (128, 64)),
+  conv(shape: (256, 32, 32), channels: (256, 32)),
+  conv(shape: (512, 16, 16), channels: (512, 16)),
+))
+
+### Shape supplies defaults, not values
+
+#draw-network((
+  conv(label: "derived", shape: (256, 40, 40)),
+  conv(
+    label: "height forced",
+    shape: (256, 40, 40),
+    height: 7,
+  ),
+))
+
+### Automatic spacing (the default)
+
+// No offsets stated
+#draw-network((
+  conv(shape: (64, 128, 128)),
+  conv(shape: (128, 64, 64)),
+  conv(shape: (256, 32, 32)),
+))
+
+### Spacing by hand
+
+#draw-network((
+  conv(depth: 4),
+  conv(depth: 4, offset: 1.4),
+  conv(depth: 4, offset: 3.5),
+))
+
+### Labels
+
+#draw-network((
+  conv(label: "block label"),
+  conv(label: "another"),
+))
+
+### Channel numbers and the axis label
+
+#draw-network((
+  // one number per band
+  conv(channels: (64,)),
+  conv(channels: (128, 256), widths: (0.4, 0.4)),
+  // one extra: the diagonal axis label
+  conv(channels: (512, 32)),
+))
+
+### Rotating labels to clear a crowded row
+
+#draw-network((
+  conv(label: "horizontal", height: 3, depth: 3, widths: (0.3,)),
+  conv(label: "diagonal", height: 3, depth: 3, widths: (0.3,), label-orient: "diagonal"),
+  conv(label: "vertical", height: 3, depth: 3, widths: (0.3,), label-orient: "vertical"),
+))
+
+### An image on the input
+
+#draw-network((
+  input(image: "default"),
+  conv(),
+))
+
+### Arbitrary content on a block
+
+// Any content works, not only an image
+#draw-network((
+  custom(image: [#text(20pt)[$Sigma$]]),
+  custom(image: [hello]),
+))
+
+### Recolouring
+
+#draw-network((
+  conv(fill: rgb("#73000A")),
+  conv(fill: rgb("#466A9F")),
+  conv(fill: rgb("#65780B")),
+))
+
+### Activation bands
+
+#draw-network(
+  (
+    conv(label: "no band", height: 4, depth: 4, widths: (0.8,), show-relu: false),
+    conv(label: "default band", height: 4, depth: 4, widths: (0.8,)),
+    conv(label: "own band", height: 4, depth: 4, widths: (0.8,),
+         fill: rgb("#466A9F"), bandfill: rgb("#CED318")),
+  ),
+  show-relu: true,
+)
+
+### The cold palette
+
+#draw-network(
+  (conv(), convres(), pool(), fc(), softmax()),
+  palette: "cold",
+)
+
+### Custom blocks
+
+#draw-network((
+  custom(label: "mine", fill: rgb("#466A9F")),
+  custom(
+    label: "also mine",
+    widths: (0.2, 0.4, 0.2),
+    fill: rgb("#1F414D"),
+  ),
+))
+
+### Defining your own block types
+
+// Your own block type is a function returning a layer
+#let attention(..args) = custom(
+  fill: rgb("#466A9F"), width: 0.35, height: 4, depth: 4,
+  legend: "Attention", ..args,
+)
+#let mlp(..args) = custom(
+  fill: rgb("#A49137"), width: 0.5, height: 4, depth: 4,
+  legend: "MLP", ..args,
+)
+
+#draw-network(
+  (attention(label: "attn"), mlp(label: "mlp"), attention(label: "attn")),
+  show-legend: true,
+)
+
+### A skip connection
+
+#draw-network(
+  (
+    conv(name: "a", label: "a"),
+    conv(name: "b", label: "b"),
+    conv(name: "c", label: "c"),
+  ),
+  connections: ((from: "a", to: "c"),),
+)
+
+### Routing modes
+
+#draw-network(
+  (
+    conv(name: "a", label: "a", height: 4, depth: 4, widths: (0.3,)),
+    conv(name: "b", label: "b", height: 4, depth: 4, widths: (0.3,)),
+    conv(name: "c", label: "c", height: 4, depth: 4, widths: (0.3,)),
+    conv(name: "d", label: "d", height: 4, depth: 4, widths: (0.3,)),
+    conv(name: "e", label: "e", height: 4, depth: 4, widths: (0.3,)),
+  ),
+  connections: (
+    (from: "a", to: "c", mode: "air", label: "air"),
+    (from: "b", to: "d", mode: "flat", label: "flat"),
+    (from: "c", to: "e", mode: "depth", label: "depth"),
+  ),
+)
+
+### Automatic lane heights
+
+#draw-network(
+  (
+    conv(name: "a"), conv(name: "b"),
+    conv(name: "c"), conv(name: "d"),
+  ),
+  connections: (
+    // the longer route arcs over the shorter
+    (from: "a", to: "d"),
+    (from: "b", to: "c"),
+  ),
+)
+
+### Arriving on the block itself
+
+#draw-network(
+  (
+    conv(name: "a", label: "a"), conv(name: "b", label: "b"),
+    concat(name: "cat", label: "concat"),
+  ),
+  connections: (
+    (from: "a", to: "cat"),                     // arrives on the axis arrow
+    (from: "b", to: "cat", touch-layer: true),  // arrives on the block itself
+  ),
+)
+
+### A fan of arrivals into one block
+
+#draw-network(
+  (
+    conv(name: "a", label: "a"), conv(name: "b", label: "b"),
+    conv(name: "c", label: "c"), concat(name: "cat", label: "concat", depth: 6),
+  ),
+  connections: (
+    (from: "a", to: "cat", touch-layer: true),
+    (from: "b", to: "cat", touch-layer: true),
+    (from: "c", to: "cat", touch-layer: true),
+  ),
+)
+
+### Telling routes apart
+
+#draw-network(
+  (conv(name: "a"), conv(name: "b"), conv(name: "c"), conv(name: "d")),
+  connections: (
+    (from: "a", to: "c", color: rgb("#73000A"), thickness: 2),
+    (from: "b", to: "d", color: rgb("#466A9F"), dash: "dashed"),
+  ),
+)
+
+### Routes in the legend
+
+#draw-network(
+  (conv(name: "a"), conv(name: "b"), conv(name: "c")),
+  connections: (
+    (from: "a", to: "c", color: rgb("#73000A"), legend: "residual add"),
+  ),
+  show-legend: true,
+  main-legend: "forward pass",
+)
+
+### Suppressing an axis arrow
+
+#draw-network((
+  // no arrow after this one
+  conv(label: "a", show-connection: false),
+  conv(label: "b"),
+  conv(label: "c"),
+))
+
+### Group brackets
+
+#draw-network(
+  (
+    conv(name: "e1"), conv(name: "e2"),
+    conv(name: "d1"), conv(name: "d2"),
+  ),
+  groups: (
+    (from: "e1", to: "e2", label: "Encoder"),
+    (from: "d1", to: "d2", label: "Decoder"),
+  ),
+)
+
+### Stacked groups
+
+#draw-network(
+  (conv(name: "a"), conv(name: "b"), conv(name: "c")),
+  groups: (
+    (from: "a", to: "b", label: "stage 1"),
+    (from: "c", to: "c", label: "stage 2"),
+    (from: "a", to: "c", label: "whole network", offset: 2.1,
+     color: rgb("#73000A")),
+  ),
+)
+
+### Repeated blocks
+
+#draw-network((
+  conv(label: "stem"),
+  convres(label: "bottleneck", repeat: 3),
+  conv(label: "head"),
+))
+
+### Parallel branches
+
+#draw-network((
+  conv(label: "in"),
+  branch(spread: 5, branches: (
+    (conv(label: "a"),),
+    (conv(label: "b"),),
+  )),
+  concat(label: "concat"),
+))
+
+### Branches stacked along the projection
+
+#draw-network((
+  conv(label: "in"),
+  branch(spread: 4, spread-mode: "depth", branches: (
+    (conv(label: "a"),),
+    (conv(label: "b"),),
+  )),
+  concat(label: "concat"),
+))
+
+### A multi-input network
+
+// Nothing before it, so the branches simply begin: a two-input network
+#draw-network((
+  branch(spread: 5, branches: (
+    (input(label: "rgb"), conv(label: "a")),
+    (input(label: "ir"), conv(label: "b")),
+  )),
+  concat(label: "fuse"),
+))
+
+### Independent outputs
+
+#draw-network((
+  conv(label: "trunk"),
+  branch(spread: 5, open: "end", branches: (
+    (conv(label: "task a"), output(label: "out a")),
+    (conv(label: "task b"), output(label: "out b")),
+  )),
+))
+
+### Nested branches
+
+#draw-network((
+  conv(label: "in"),
+  branch(spread: 7, branches: (
+    (
+      branch(spread: 2.6, lead: 1.2, branches: (
+        (conv(label: "a1"),),
+        (conv(label: "a2"),),
+      )),
+    ),
+    (conv(label: "b"),),
+  )),
+  conv(label: "out"),
+))
+
+### A legend
+
+#draw-network(
+  (conv(), pool(), convres(), fc()),
+  show-legend: true,
+)
+
+### Renaming legend entries
+
+#draw-network(
+  (
+    conv(legend: "3x3 convolution"),
+    pool(legend: "max pool"),
+    fc(legend: "linear"),
+  ),
+  show-legend: true,
+  legend-title: "Operations",
+)
+
+### Fitting the page
+
+#draw-network(
+  (conv(), conv(), conv(), conv()),
+  scale: 55%,
+)
+
+## Errors you will see
+
+    neural-netz: unknown layer option "hieght" on layer 3 (type "conv").
+    Did you mean "height"? Options accepted here: ...
+
+The option does not exist for that type. Check the per-type table above; a
+correctly spelled option that belongs to a different type gives this too.
+
+    neural-netz: unknown layer type "convolution" on layer 0.
+
+Use one of the fourteen types listed above.
+
+    neural-netz: connection 0 refers to "bb", which is not the `name` of any
+    layer. Did you mean "b"?
+
+Add a `name` to the target layer, or fix the reference.
+
+    neural-netz: layer 0 has no `type`.
+
+Every layer dictionary states one. Constructors fill it in for you.
+
+    error: array index out of bounds (index: 1, len: 1)  [inside src/lib.typ]
+
+Almost always `channels` with more entries than the layer has bands, plus one.
+Either add matching `widths` entries or remove channel entries.
+
+    error: unexpected argument: lable
+
+A constructor received an option that does not exist. This is Typst's own
+message, raised before the package sees the call.
+
+## Choosing a layer type
+
+- `conv` -- convolution. Banded, thickness means channels.
+- `convres` -- residual convolution. Same, different colour.
+- `deconv` -- transposed convolution / upsampling.
+- `pool` / `unpool` -- attach to the block before them; thin slabs.
+- `fc` -- fully connected. Use `depth: 0` for a flat rectangle.
+- `gap` -- global average pooling. Small by default.
+- `concat` -- concatenation. A common target for a fan of `touch-layer` routes.
+- `sum` -- element-wise sum. A disc, not a block.
+- `softmax`, `convsoftmax` -- classifier heads.
+- `output` -- terminal block.
+- `input` -- flat plane, usually carrying an image. No outgoing arrow by default.
+- `custom` -- everything else. Define your own block types as functions
+  returning `custom(...)` with the options fixed.
+- `branch` -- container for parallel paths.

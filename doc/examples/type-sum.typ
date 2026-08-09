@@ -4,6 +4,6 @@
 #draw-network((
   conv(),
   sum(),
-  sum(symbol: [$times$], radius: 0.5, fill: rgb("#FFF2E3")),
+  sum(symbol: [$times$], radius: 0.5),
   conv(),
 ))

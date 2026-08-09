@@ -2,8 +2,9 @@
 #set page(width: auto, height: auto, margin: 3mm)
 // @show
 #draw-network((
-  conv(channels: (64,), height: 4, depth: 4),
-  conv(channels: (128, 256), height: 4, depth: 4),
-  // a third entry becomes the diagonal axis label
-  conv(channels: (256, 512, 32), height: 4, depth: 4),
+  // one number per band
+  conv(channels: (64,)),
+  conv(channels: (128, 256), widths: (0.4, 0.4)),
+  // one extra: the diagonal axis label
+  conv(channels: (512, 32)),
 ))

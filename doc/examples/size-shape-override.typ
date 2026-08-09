@@ -3,5 +3,9 @@
 // @show
 #draw-network((
   conv(label: "derived", shape: (256, 40, 40)),
-  conv(label: "height forced", shape: (256, 40, 40), height: 7),
+  conv(
+    label: "height forced",
+    shape: (256, 40, 40),
+    height: 7,
+  ),
 ))
